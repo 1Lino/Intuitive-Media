@@ -1,17 +1,48 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              x:Class="IntuitiveMedia.Views.PlayerView"
-             > <!--Aponta para o namespace e sua respectiva classe PlayerView-->
+             d:DesignWidth="600" d:DesignHeight="450"
+             > <!-- Aponta para o namespace e sua respectiva classe PlayerView-->
 
-             <Panel Width="600" Height="450">
+             <Grid>
+                 <Button ZIndex="1"
+                         Content="Videos"
+                         VerticalAlignment="Top"
+                         HorizontalAlignment="Center"
+                         Margin="10"></Button>
+
+                 <!-- Essa imagem aqui é só pra teste. É onde seria o vídeo-->
                  <Image ZIndex="0" Source="/Assets/avalonia-logo.ico"></Image>
-                 <Button ZIndex="1" Content="Videos" VerticalAlignment="Top" HorizontalAlignment="Right" Margin="10"></Button>
-                 <!--Controles de vídeo-->
-                 <Menu ZIndex="1" VerticalAlignment="Bottom"           HorizontalAlignment="Center" Margin="0 20">
-                     <Button Content="Anterior"/>
-                     <Button Content="Pausar"/>
-                     <Button Content="Próximo"/>
-                 </Menu>
-             </Panel>
+
+                 <!-- Controles que ficam sobre o vídeo -->
+                 <Grid ZIndex="1"
+                       VerticalAlignment="Bottom"
+                       HorizontalAlignment="Center"
+                       Margin="0,0,0,25"
+                       >
+
+                     <StackPanel Orientation="Horizontal"
+                                 Spacing="12">
+
+                         <Button Content="⏮"
+                                 Width="50"
+                                 Height="40"/>
+
+                         <Button Content="▶"
+                                 Width="60"
+                                 Height="45"/>
+
+                         <Button Content="⏭"
+                                 Width="50"
+                                 Height="40"/>
+
+                     </StackPanel>
+
+                 </Grid>
+                 <!--END-->
+             </Grid>
+
+
 
 </UserControl>
