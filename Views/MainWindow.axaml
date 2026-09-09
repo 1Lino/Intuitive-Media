@@ -1,0 +1,28 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:IntuitiveMedia.ViewModels"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="using:IntuitiveMedia.Views"
+        mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="450"
+        Width="600" Height="450"
+        x:Class="IntuitiveMedia.Views.MainWindow"
+        x:DataType="vm:MainViewModel"
+        Icon="/Assets/avalonia-logo.ico"
+        Title="IntuitiveMedia">
+
+    <Design.DataContext>
+        <!-- This only sets the DataContext for the previewer in an IDE,
+        to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
+        <vm:MainViewModel />
+    </Design.DataContext>
+
+    <Panel>
+
+        <!--Nota: não pode haver espaços entre : e o nome da classe, do contrário resulta erro-->
+        <local:PlayerView/>
+
+    </Panel>
+
+
+</Window>

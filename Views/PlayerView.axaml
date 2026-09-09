@@ -1,0 +1,17 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="IntuitiveMedia.Views.PlayerView"
+             > <!--Aponta para o namespace e sua respectiva classe PlayerView-->
+
+             <Panel Width="600" Height="450">
+                 <Image ZIndex="0" Source="/Assets/avalonia-logo.ico"></Image>
+                 <Button ZIndex="1" Content="Videos" VerticalAlignment="Top" HorizontalAlignment="Right" Margin="10"></Button>
+                 <!--Controles de vídeo-->
+                 <Menu ZIndex="1" VerticalAlignment="Bottom"           HorizontalAlignment="Center" Margin="0 20">
+                     <Button Content="Anterior"/>
+                     <Button Content="Pausar"/>
+                     <Button Content="Próximo"/>
+                 </Menu>
+             </Panel>
+
+</UserControl>
