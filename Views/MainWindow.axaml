@@ -1,3 +1,4 @@
+<!-- É preciso xmlns:local="using:IntuitiveMedia.Views" para utilizar os controles de outros axaml da pasta Views, onde "local" é apenas uma keyword aleatória, como uma variável que recebe esta referência-->
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="using:IntuitiveMedia.ViewModels"
@@ -9,7 +10,9 @@
         x:Class="IntuitiveMedia.Views.MainWindow"
         x:DataType="vm:MainViewModel"
         Icon="/Assets/avalonia-logo.ico"
-        Title="IntuitiveMedia">
+        Title="IntuitiveMedia Player"
+        PointerMoved="PointerMovedIntoWindow"
+        >
 
     <Design.DataContext>
         <!-- This only sets the DataContext for the previewer in an IDE,
@@ -17,12 +20,26 @@
         <vm:MainViewModel />
     </Design.DataContext>
 
-    <Panel>
+    <!-- Esse grid engloba os componentes PlayerMediaMenu, PlayerView e PlayerControls-->
+    <Grid>
+
+        <!--Esse botão deve ser um menu de controle chamado PlayerMediaMenu-->
+        <Button Name="BtnVideos"
+                ZIndex="1"
+                Content="Videos"
+                VerticalAlignment="Top"
+                HorizontalAlignment="Center"
+                Margin="10"
+                IsVisible="{Binding AreControlsVisible}"
+                ></Button>
+
+        <!-- Essa imagem aqui é só pra teste. É onde seria o vídeo, deve ser um componente separado-->
+        <Image ZIndex="0" Source="/Assets/avalonia-logo.ico"></Image> <!--Deve ser um controle chamado PlayerView-->
 
         <!--Nota: não pode haver espaços entre : e o nome da classe, do contrário resulta erro-->
-        <local:PlayerView/>
+        <local:PlayerView IsVisible="{Binding AreControlsVisible}"/> <!--Deve se chamar PlayerControls-->
 
-    </Panel>
+    </Grid>
 
 
 </Window>
