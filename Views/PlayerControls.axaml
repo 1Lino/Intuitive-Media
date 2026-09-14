@@ -1,0 +1,35 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:vm="using:IntuitiveMedia.ViewModels"
+             x:DataType="vm:MainViewModel"
+             x:Class="IntuitiveMedia.Views.PlayerControls"
+             d:DesignWidth="600" d:DesignHeight="450"
+             > <!-- Aponta para o namespace e sua respectiva classe PlayerControls-->
+
+             <!-- Listamento horizontal dos controles de mídia. Talvez Grid nem seja necessário-->
+             <Grid
+                     VerticalAlignment="Bottom"
+                     HorizontalAlignment="Center"
+                     Margin="0,0,0,25"
+                     >
+
+                     <StackPanel Orientation="Horizontal"
+                                 Spacing="12">
+
+                             <Button Content="⏮"
+                                     Width="50"
+                                     Height="40"/>
+
+                             <Button Content="▶"
+                                     Width="60"
+                                     Height="45"/>
+
+                             <Button Content="⏭"
+                                     Width="50"
+                                     Height="40"/>
+
+                     </StackPanel>
+             </Grid>
+        <!--END-->
+</UserControl>

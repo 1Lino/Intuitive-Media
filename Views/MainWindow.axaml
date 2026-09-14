@@ -22,24 +22,19 @@
 
     <!-- Esse grid engloba os componentes PlayerMediaMenu, PlayerView e PlayerControls-->
     <Grid>
+        <!-- Nota: não pode haver espaços entre ':' e o nome do componente, do contrário resulta em erro -->
 
-        <!--Esse botão deve ser um menu de controle chamado PlayerMediaMenu-->
-        <Button Name="BtnVideos"
-                ZIndex="1"
-                Content="Videos"
-                VerticalAlignment="Top"
-                HorizontalAlignment="Center"
-                Margin="10"
-                IsVisible="{Binding AreControlsVisible}"
-                ></Button>
+        <!-- Menu com bandeja de videos -->
+        <local:PlayerMediaMenu ZIndex="1" IsVisible="{Binding AreControlsVisible}"/>
 
-        <!-- Essa imagem aqui é só pra teste. É onde seria o vídeo, deve ser um componente separado-->
-        <Image ZIndex="0" Source="/Assets/avalonia-logo.ico"></Image> <!--Deve ser um controle chamado PlayerView-->
+        <!-- Player de video do VLC Media -->
+        <local:PlayerView ZIndex="0"/>
 
-        <!--Nota: não pode haver espaços entre : e o nome da classe, do contrário resulta erro-->
-        <local:PlayerView IsVisible="{Binding AreControlsVisible}"/> <!--Deve se chamar PlayerControls-->
+        <!-- Controles do player de video -->
+        <local:PlayerControls ZIndex="1" IsVisible="{Binding AreControlsVisible}"/>
 
     </Grid>
 
-
 </Window>
+
+<!--TODO: fazer com que controles não sumam caso o mouse esteja sobre algum deles-->

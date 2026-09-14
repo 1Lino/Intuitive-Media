@@ -9,7 +9,7 @@ namespace IntuitiveMedia.Views;
 public partial class MainWindow : Window
 {
     private readonly DispatcherTimer _hideTimer;
-    private bool _isPointerOverControls;
+
     public MainWindow()
     {
         InitializeComponent();
@@ -29,7 +29,6 @@ public partial class MainWindow : Window
             vm.AreControlsVisible = true;
         }
 
-        // Mouse activity resets the inactivity timer.
         _hideTimer.Stop();
         _hideTimer.Start();
     }
@@ -38,12 +37,17 @@ public partial class MainWindow : Window
     {
         _hideTimer.Stop();
 
-        if (!_isPointerOverControls)
-            if (DataContext is MainViewModel vm)
+        if (DataContext is MainViewModel vm)
+        {
+            if (!vm.IsPointerOverControls)
             {
                 vm.AreControlsVisible = false;
+                Console.WriteLine("Controls are now invisible");
+                return;
             }
+            Console.WriteLine("Controls remain visible");
+        }
+        // END
     }
-
 
 }

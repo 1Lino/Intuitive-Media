@@ -2,10 +2,10 @@ using Avalonia.Controls;
 
 namespace IntuitiveMedia.Views;
 
-public partial class PlayerView : UserControl
+public partial class PlayerMediaMenu : UserControl
 {
 
-    public PlayerView()
+    public PlayerMediaMenu()
     {
         InitializeComponent();
     }
