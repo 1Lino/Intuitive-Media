@@ -2,10 +2,11 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:vm="using:IntuitiveMedia.ViewModels"
-             x:DataType="vm:MainViewModel"
+             x:DataType="vm:MediaDrawerModel"
              x:Class="IntuitiveMedia.Views.PlayerView"
              d:DesignWidth="600" d:DesignHeight="450">
     <Grid>
+        <!-- TODO: aqui é onde deve vir o player do VLC -->
         <Image Source="/Assets/avalonia-logo.ico"></Image>
     </Grid>
 </UserControl>

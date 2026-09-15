@@ -5,23 +5,30 @@
              x:DataType="vm:MainViewModel"
              x:Class="IntuitiveMedia.Views.PlayerMediaMenu"
              d:DesignWidth="600" d:DesignHeight="450"
-             > <!-- Aponta para o namespace e sua respectiva classe PlayerView-->
+             >
 
-             <!-- Listamento horizontal dos controles de mídia. Talvez Grid nem seja necessário-->
-             <Grid
-                 VerticalAlignment="Top"
-                 HorizontalAlignment="Center"
-                 Margin="0,0,0,25"
-                 PointerEntered="OnMouseOver"
-                 PointerExited="OnMouseExit">
+    <Grid
+        VerticalAlignment="Top"
+        HorizontalAlignment="Center"
+        Margin="0,0,0,25"
+        PointerEntered="OnMouseOver"
+        PointerExited="OnMouseExit">
 
-                 <Button Name="BtnVideos"
-                         Content="Videos"
-                         VerticalAlignment="Top"
-                         HorizontalAlignment="Center"
-                         Margin="10"
-                         ></Button>
+        <Button Name="ToggleVideoDrawerBtn"
+                Content="Videos"
+                VerticalAlignment="Top"
+                HorizontalAlignment="Center"
+                Margin="10"
+                Click="ToggleDrawerVisibility"></Button>
 
-             </Grid>
+        <!-- TODO: esse VideoDrawer deve ser um componente separado com seu próprio Data-Context -->
+        <Menu Name="VideoDrawer"
+              IsVisible="{Binding IsVideoDrawerOn}"
+              Width="300" Height="80"
+              Background="LightGray"
+              Margin="0 50"
+              ></Menu>
+
+    </Grid>
     <!--END-->
 </UserControl>
