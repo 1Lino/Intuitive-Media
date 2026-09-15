@@ -12,7 +12,8 @@
                      VerticalAlignment="Bottom"
                      HorizontalAlignment="Center"
                      Margin="0,0,0,25"
-                     >
+                     PointerEntered="OnMouseOver"
+                     PointerExited="OnMouseExit">
 
                      <StackPanel Orientation="Horizontal"
                                  Spacing="12">
