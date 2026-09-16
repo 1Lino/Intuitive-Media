@@ -2,6 +2,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:vm="using:IntuitiveMedia.ViewModels"
+             xmlns:control="using:IntuitiveMedia.Views"
              x:DataType="vm:MainViewModel"
              x:Class="IntuitiveMedia.Views.PlayerMediaMenu"
              d:DesignWidth="600" d:DesignHeight="450"
@@ -21,13 +22,8 @@
                 Margin="10"
                 Click="ToggleDrawerVisibility"></Button>
 
-        <!-- TODO: esse VideoDrawer deve ser um componente separado com seu próprio Data-Context -->
-        <Menu Name="VideoDrawer"
-              IsVisible="{Binding IsVideoDrawerOn}"
-              Width="300" Height="80"
-              Background="LightGray"
-              Margin="0 50"
-              ></Menu>
+        <!-- Ao clicar no botão acima, a propriedade IsVideoDrawerOn mudará entre True e False, fazendo a visibilidade do controle abaixo responder conforme este dado através de Data-Binding no contexto de MainViewModel-->
+        <control:MediaDrawer IsVisible="{Binding IsVideoDrawerOn}"/>
 
     </Grid>
     <!--END-->
