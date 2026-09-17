@@ -16,7 +16,7 @@ public partial class PlayerMediaMenu : UserControl
 
     private void ToggleDrawerVisibility(object? sender, RoutedEventArgs e)
     {
-        if (DataContext is MainViewModel vm)
+        if (DataContext is MediaDrawerModel vm)
         {
             vm.IsVideoDrawerOn = !vm.IsVideoDrawerOn;
             Console.WriteLine($"Toggle drawer view. Is drawer on: {vm.IsVideoDrawerOn}");
@@ -25,7 +25,7 @@ public partial class PlayerMediaMenu : UserControl
 
     private void OnMouseOver(object? sender, PointerEventArgs e)
     {
-        if (DataContext is MainViewModel vm)
+        if (DataContext is MediaDrawerModel vm)
         {
             vm.IsPointerOverControls = true;
             Console.WriteLine($"Is mouse over control: {vm.IsPointerOverControls}");
@@ -34,7 +34,7 @@ public partial class PlayerMediaMenu : UserControl
 
     private void OnMouseExit(object? sender, PointerEventArgs e)
     {
-        if (DataContext is MainViewModel vm)
+        if (DataContext is MediaDrawerModel vm)
         {
             vm.IsPointerOverControls = false;
             Console.WriteLine($"Is mouse over control: {vm.IsPointerOverControls}");

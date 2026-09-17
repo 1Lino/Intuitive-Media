@@ -6,11 +6,45 @@
              x:Class="IntuitiveMedia.Views.MediaDrawer"
              >
 
-      <!-- TODO: Dentro deste Menu, deve haver uma fila de componentes/vídeos. Devem responder ao data-binding do contexto de MediaDrawerModel, e isto deve refletir também em outro controle, que é o PlayerView, que deve responder a este mesmo contexto -->
-      <Menu Name="VideoDrawer"
-            Width="300" Height="80"
-            Background="LightGray"
-            Margin="0 50"
-            ></Menu>
+      <DockPanel Name="VideoDrawer"
+                 Width="400" Height="150"
+                 Background="LightGray"
+                 Margin="0 50"
+                 >
+            <ScrollViewer HorizontalScrollBarVisibility="Auto">
+                  <StackPanel Orientation="Horizontal">
+                        <!-- Basicamente estes StackPanel abaixo será o modelo de componente que deverá ser criado aqui dinamicamente conforme a playlist. Onde TextBlock deve vir o nome do vídeo, e no lugar de Button deve vir uma thumbnail do vídeo com propriedade Click-->
+                        <StackPanel Margin="5" VerticalAlignment="Center">
+                              <TextBlock Text="Video name" ></TextBlock>
+                              <Button Content="Video 1"></Button>
+                        </StackPanel>
+
+                        <StackPanel Margin="5" VerticalAlignment="Center">
+                              <TextBlock Text="Video name"></TextBlock>
+                              <Button Content="Video 2"></Button>
+                        </StackPanel>
+
+                        <StackPanel Margin="5" VerticalAlignment="Center">
+                              <TextBlock Text="Video name"></TextBlock>
+                              <Button Content="Video 3"></Button>
+                        </StackPanel>
+
+                        <StackPanel Margin="5" VerticalAlignment="Center">
+                              <TextBlock Text="Video name"></TextBlock>
+                              <Button Content="Video 4"></Button>
+                        </StackPanel>
+
+                        <StackPanel Margin="5" VerticalAlignment="Center">
+                              <TextBlock Text="Video name"></TextBlock>
+                              <Button Content="Video 5"></Button>
+                        </StackPanel>
+
+                        <StackPanel Margin="5" VerticalAlignment="Center">
+                              <TextBlock Text="Video name"></TextBlock>
+                              <Button Content="Video 6"></Button>
+                        </StackPanel>
+                  </StackPanel>
+            </ScrollViewer>
+      </DockPanel>
 
 </UserControl>

@@ -11,7 +11,6 @@
         x:DataType="vm:MainViewModel"
         Icon="/Assets/avalonia-logo.ico"
         Title="IntuitiveMedia Player"
-        PointerMoved="PointerMovedIntoWindow"
         >
 
     <Design.DataContext>
@@ -24,14 +23,15 @@
     <Grid>
         <!-- Nota: não pode haver espaços entre ':' e o nome do componente, do contrário resulta em erro -->
 
-        <!-- Menu com bandeja de videos -->
-        <local:PlayerMediaMenu ZIndex="1" IsVisible="{Binding AreControlsVisible}"/>
+        <!--TODO:Grid restruturar o projeto para que AreControlsVisible e todos as demais propriedades possam ser acessadas por PlayerView, pois descobri que a lib do VLC pro Avalonia tem um problema em que o reprodutor de mídia é desenhado fora da árvore de renderização do Avalonia, de modo que overlay de controles sobre o vídeo não é possível e só é resolvido com um hack específico em que colocamos estes controles dentro do controle de mídia do VLC-->
+        <!-- Menu com bandeja de videos
+        <local:PlayerMediaMenu ZIndex="1" IsVisible="{Binding AreControlsVisible}"/>-->
 
-        <!-- Player de video do VLC Media -->
-        <local:PlayerView ZIndex="0"/>
+        <!-- Player de video do VLC Media. O data-context deste componente deve ser definido explicitamente aqui, para evitar erro de tipo, pois em runtime o contexto MainViewModel será herdado por estes componentes -->
+        <local:PlayerView />
 
-        <!-- Controles do player de video -->
-        <local:PlayerControls ZIndex="1" IsVisible="{Binding AreControlsVisible}"/>
+        <!-- Controles do player de video
+        <local:PlayerControls ZIndex="1" IsVisible="{Binding AreControlsVisible}"/>-->
 
     </Grid>
 

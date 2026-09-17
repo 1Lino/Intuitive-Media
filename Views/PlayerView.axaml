@@ -2,11 +2,20 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:vm="using:IntuitiveMedia.ViewModels"
+             xmlns:vlc="clr-namespace:LibVLCSharp.Avalonia;assembly=LibVLCSharp.Avalonia"
+             xmlns:local="using:IntuitiveMedia.Views"
              x:DataType="vm:MediaDrawerModel"
              x:Class="IntuitiveMedia.Views.PlayerView"
-             d:DesignWidth="600" d:DesignHeight="450">
+             d:DesignWidth="600" d:DesignHeight="450"
+             >
     <Grid>
-        <!-- TODO: aqui é onde deve vir o player do VLC -->
-        <Image Source="/Assets/avalonia-logo.ico"></Image>
+        <vlc:VideoView MediaPlayer="{Binding MediaPlayer}">
+            <!--Para que a ação do mouse seja capturada, já que o VideoView ignora tais eventos, uso o próprio Grid, preenchendo-o com uma cor completamente transparente. Basicamente o grid funciona como um overlay invisível por cima do VideoView, permitindo então captura de movimento do mouse -->
+            <Grid PointerMoved="PointerMovedIntoWindow" Background="Transparent">
+                <!--{Binding AreControlsVisible}-->
+                <local:PlayerMediaMenu ZIndex="1" IsVisible="{Binding AreControlsVisible}"/>
+                <local:PlayerControls ZIndex="1" IsVisible="{Binding AreControlsVisible}"/>
+            </Grid>
+        </vlc:VideoView>
     </Grid>
 </UserControl>
