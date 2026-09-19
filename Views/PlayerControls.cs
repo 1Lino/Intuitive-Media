@@ -1,16 +1,23 @@
 using System;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using IntuitiveMedia.ViewModels;
+using LibVLCSharp.Shared;
 
 namespace IntuitiveMedia.Views;
 
 // Todo axaml separado precisa de uma classe dessas.
 public partial class PlayerControls : UserControl
 {
+    // private readonly LibVLC _libVLC;
+    // private readonly MediaPlayer _mediaPlayer;
+
     public PlayerControls()
     {
+        // _libVLC = new LibVLC();
+        // _mediaPlayer = new MediaPlayer(_libVLC);
         InitializeComponent();
     }
 
@@ -23,6 +30,16 @@ public partial class PlayerControls : UserControl
             Console.WriteLine("Clicked the load button to load a video.");
         }
     }
+
+    // private void PlayMedia(object? sender, VisualTreeAttachmentEventArgs e)
+    // {
+    //     if (DataContext is MediaDrawerModel vm)
+    //     {
+    //         var media = new Media(_libVLC, new Uri("https://www.w3schools.com/html/mov_bbb.mp4"));
+    //         _mediaPlayer.Play(media);
+    //         Console.WriteLine("Clicked the Play button!");
+    //     }
+    // }
 
     private void OnMouseOver(object? sender, PointerEventArgs e)
     {

@@ -29,7 +29,8 @@
 
                              <Button Content="▶"
                                      Width="60"
-                                     Height="45"/>
+                                     Height="45"
+                                     Command="{Binding IniciarReproducaoCommand}"/>
 
                              <Button Content="⏭"
                                      Width="50"
