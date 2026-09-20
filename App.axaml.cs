@@ -17,9 +17,16 @@ public partial class App : Application
     {
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
+            var mainViewModel = new MediaDrawerModel();
             desktop.MainWindow = new MainWindow
             {
-                DataContext = new MediaDrawerModel(),
+                DataContext = mainViewModel,
+            };
+
+            // quando a aplicação for finalizada, dá um dispose nos objetos MediaPlayer e LibVLC na memória pra evitar vazamento:
+            desktop.ShutdownRequested += (sender, e) =>
+            {
+                mainViewModel.Dispose();
             };
         }
 

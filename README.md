@@ -11,8 +11,30 @@ O objetivo deste projeto é desenvolver um aplicativo Desktop de reprodução de
 
 - Plataforma .NET (C#)
 - Framework UI Avalonia
-- LibVLCSharp.Avalonia
-- Fluent UI System Icons
+- LibVLC
+- Fluent UI System
+
+No contexto deste projeto, essas libs do **VLC** são necessárias:
+
+```Shell
+dotnet add package LibVLCSharp && dotnet add package LibVLCSharp.Avalonia
+```
+
+E para que o **VLC** funcione, também:
+
+```Shell
+dotnet add package VideoLAN.LibVLC.Windows
+```
+
+Este último comando é necessário porque .NET precisa dos binários nativos do VLC. Para mais detalhes sobre esta lib e sua instalação, veja: [code.videolan.org/videolan/LibVLCSharp](https://code.videolan.org/videolan/LibVLCSharp)
+
+Quanto ao framework do **Avalonia**, segue o tutorial oficial de instalação e preparação do ambiente: [docs.avaloniaui.net/docs/get-started/install-avalonia](https://docs.avaloniaui.net/docs/get-started/install-avalonia)
+
+Sobre **Fluent UI System**, veja:
+
+Ícones:[ icon-sets.iconify.design/fluent](https://icon-sets.iconify.design/fluent/)
+
+Repositório oficial: [github.com/microsoft/fluentui-system-icons](https://github.com/microsoft/fluentui-system-icons)
 
 ### Licença
 
