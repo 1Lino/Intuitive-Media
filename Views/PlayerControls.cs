@@ -30,28 +30,29 @@ public partial class PlayerControls : UserControl
                 new FilePickerOpenOptions
                 {
                     Title = "Selecionar arquivo",
-                    AllowMultiple = false
+                    AllowMultiple = false // por enquanto, só será permitido 1 arquivo, para fins de teste, mas será possível selecionar vários para uma playlist, futuramente.
                 });
 
             if (files.Count > 0)
             {
                 // acessa a lista e manda somente o path dos arquivos selecionados pra ela.
-                vm._files.AddRange(files.Select(file => file.Path.LocalPath));
+                vm._playlist.AddRange(files.Select(file => file.Path.LocalPath));
 
-                foreach (var file in vm._files)
+                foreach (var file in vm._playlist)
                 {
-                    Console.WriteLine(file);
+                    vm.currentMedia = vm._playlist.Last();
+                    // Console.WriteLine($"You're gonna watch: {file}");
+                    // Console.WriteLine($"State of the MediaPlayer: {vm.MediaPlayer.State}");
                 }
-
+            }
+            else
+            {
+                return; // pois não se deve seguir adiante caso haja 0 arquivos selecionados, do contrário incorreria em um exception de operação inválida, já que a playlist estaria vazia e o método abaixo tentaria reproduzir uma mídia que não existe.
             }
 
-            // TODO: estas três linhas abaixo podem se tornar um método separado, sendo que vm._files... etc deve ser um argumento passado pra esse método, de modo que, para carregar mídia, usamos vm._files.Last() pra carregar a última mídia separada, e no caso de outros controles carregamos outros arquivos da lista (por exemplo, no caso do controle de "próximo", ele deve saber qual é o item atual da lista sendo executado e então executar o item do próximo índice da lista, e assim por diante).
-            using var media = new Media(vm.LibVLC, new Uri(vm._files.Last()));
-            if (media == null) return;
-            vm.MediaPlayer.Play(media);
-            vm.isMediaPaused = false;
+            vm.PlayMedia(vm.currentMedia);
 
-            Console.WriteLine("Clicked the load button to load a video.");
+            // Console.WriteLine("Clicked the load button to load a video.");
         }
     }
 
@@ -59,13 +60,11 @@ public partial class PlayerControls : UserControl
     {
         if (DataContext is MediaDrawerModel vm)
         {
-            if (vm.MediaPlayer.CanPause)
-                vm.isMediaPaused = !vm.isMediaPaused;
-
-            if (vm.isMediaPaused)
+            if (vm.MediaPlayer.IsPlaying)
                 vm.MediaPlayer.Pause();
             else
                 vm.MediaPlayer.Play();
+
         }
     }
 
@@ -74,7 +73,7 @@ public partial class PlayerControls : UserControl
         if (DataContext is MediaDrawerModel vm)
         {
             vm.IsPointerOverControls = true;
-            Console.WriteLine($"Is mouse over control: {vm.IsPointerOverControls}");
+            // Console.WriteLine($"Is mouse over control: {vm.IsPointerOverControls}");
         }
     }
 
@@ -83,7 +82,7 @@ public partial class PlayerControls : UserControl
         if (DataContext is MediaDrawerModel vm)
         {
             vm.IsPointerOverControls = false;
-            Console.WriteLine($"Is mouse over control: {vm.IsPointerOverControls}");
+            // Console.WriteLine($"Is mouse over control: {vm.IsPointerOverControls}");
         }
     }
 }

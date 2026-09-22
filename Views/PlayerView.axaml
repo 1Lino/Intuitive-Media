@@ -8,16 +8,16 @@
              x:Class="IntuitiveMedia.Views.PlayerView"
              d:DesignWidth="600" d:DesignHeight="450"
              >
-    <Grid>
-        <vlc:VideoView MediaPlayer="{Binding MediaPlayer}"
-                       MinWidth="400" MinHeight="300"
-                       HorizontalAlignment="Stretch"
-                       VerticalAlignment="Stretch">
-            <!--Para que a ação do mouse seja capturada, já que o VideoView ignora tais eventos, uso o próprio Grid, preenchendo-o com uma cor completamente transparente. Basicamente o grid funciona como um overlay invisível por cima do VideoView, permitindo então captura de movimento do mouse -->
-            <Grid PointerMoved="PointerMovedIntoWindow" Background="Transparent" DoubleTapped="OnDoubleTapped">
-                <local:PlayerMediaMenu ZIndex="1" IsVisible="{Binding AreControlsVisible}"/>
-                <local:PlayerControls ZIndex="1" IsVisible="{Binding AreControlsVisible}"/>
-            </Grid>
-        </vlc:VideoView>
-    </Grid>
+
+    <vlc:VideoView MediaPlayer="{Binding MediaPlayer}"
+                   MinWidth="400" MinHeight="300"
+                   HorizontalAlignment="Stretch"
+                   VerticalAlignment="Stretch">
+        <!--Para que a ação do mouse seja capturada, já que o VideoView ignora tais eventos, uso o próprio Grid, preenchendo-o com uma cor completamente transparente. Basicamente o grid funciona como um overlay invisível por cima do VideoView, permitindo então captura de movimento do mouse -->
+        <Grid Name="ControlsOverlay" PointerMoved="PointerMovedIntoWindow" Background="Transparent" DoubleTapped="OnDoubleTapped">
+            <local:PlayerMediaMenu ZIndex="1" IsVisible="{Binding AreControlsVisible}"/>
+            <local:PlayerControls ZIndex="1" IsVisible="{Binding AreControlsVisible}"/>
+        </Grid>
+    </vlc:VideoView>
+
 </UserControl>

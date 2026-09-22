@@ -22,10 +22,10 @@ public partial class PlayerView : UserControl
 
         _hideTimer.Tick += HideTimer_Tick;
 
-        AttachedToVisualTree += (_, _) =>
-        {
-            Debug.WriteLine(DataContext?.GetType().FullName);
-        };
+        // AttachedToVisualTree += (_, _) =>
+        // {
+        //     Debug.WriteLine(DataContext?.GetType().FullName);
+        // };
     }
 
     private void PointerMovedIntoWindow(object? sender, PointerEventArgs e)
@@ -33,7 +33,8 @@ public partial class PlayerView : UserControl
         if (DataContext is MediaDrawerModel vm)
         {
             vm.AreControlsVisible = true;
-            Console.WriteLine("Pointer moved into window!");
+            // Console.WriteLine("Pointer moved over the window!");
+            // Console.WriteLine($"Is pointer over a control? {vm.IsPointerOverControls}");
         }
 
         _hideTimer.Stop();
@@ -60,19 +61,14 @@ public partial class PlayerView : UserControl
         // finalmente o bloco que leva ao comando de fullscreen:
         if (DataContext is MediaDrawerModel vm)
         {
+            if (vm.IsPointerOverControls) return; // Pra impedir fullscreen se usuário clicar duas vezes em área de controles.
+
             if (TopLevel.GetTopLevel(this) is not Window window) // puxa a window pelo TopLevel desse objeto e disponibiliza como variável local.
                 return;
 
-            vm.isWindowFullscreen = !vm.isWindowFullscreen; // toggle básico
-
-            if (vm.isWindowFullscreen)
-            {
-                window.WindowState = WindowState.FullScreen;
-            }
-            else
-            {
-                window.WindowState = WindowState.Normal;
-            }
+            // toggle básico:
+            window.WindowState = window.WindowState == WindowState.Normal ?
+            WindowState.FullScreen : WindowState.Normal;
         }
     }
 
@@ -85,10 +81,10 @@ public partial class PlayerView : UserControl
             if (!vm.IsPointerOverControls)
             {
                 vm.AreControlsVisible = false;
-                Console.WriteLine("Controls are now invisible");
+                // Console.WriteLine("Controls are now invisible");
                 return;
             }
-            Console.WriteLine("Controls remain visible");
+            // Console.WriteLine("Controls remain visible");
         }
         //END
     }
