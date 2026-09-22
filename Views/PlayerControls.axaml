@@ -21,7 +21,7 @@
                              <Button Content="Load"
                                      Width="50"
                                      Height="40"
-                                     Click="LoadMedia"></Button>
+                                     Click="CarregarMidia"></Button>
 
                              <Button Content="⏮"
                                      Width="50"
@@ -30,7 +30,7 @@
                              <Button Content="▶"
                                      Width="60"
                                      Height="45"
-                                     Command="{Binding IniciarReproducaoCommand}"/>
+                                     Click="PausarMidia"/>
 
                              <Button Content="⏭"
                                      Width="50"

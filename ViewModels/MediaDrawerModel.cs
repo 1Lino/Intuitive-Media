@@ -1,8 +1,8 @@
 // Para instalar lib do VLC pro Avalonia: dotnet add package LibVLCSharp && dotnet add package LibVLCSharp.Avalonia
 // E para que o VLC funcione, também: dotnet add package VideoLAN.LibVLC.Windows (Este último comando é necessário porque .NET precisa dos binários nativos do VLC.)
 using System;
+using System.Collections.Generic;
 using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
 using LibVLCSharp.Shared;
 
 namespace IntuitiveMedia.ViewModels;
@@ -19,12 +19,15 @@ public partial class MediaDrawerModel : ViewModelBase, IDisposable
     [ObservableProperty]
     public partial bool IsVideoDrawerOn { get; set; }
 
+    // importante inicializar _files usando new(), para evitar NullReferenceException ao puxar os endereços das mídias para cá.
+    public List<string> _files { get; set; } = new();
+
     private bool _disposed;
     public LibVLC LibVLC { get; }
     public MediaPlayer MediaPlayer { get; }
 
-    // URL/endereço de vídeo de exemplo:
-    private readonly string _url = "https://www.w3schools.com/html/mov_bbb.mp4";
+    public bool isMediaPaused { get; set; }
+    public bool isWindowFullscreen { get; set; } = false;
 
     public MediaDrawerModel()
     {
@@ -45,29 +48,5 @@ public partial class MediaDrawerModel : ViewModelBase, IDisposable
         LibVLC.Dispose();
 
         GC.SuppressFinalize(this);
-    }
-
-    // Este comando deve abrir um diálogo para que o usuário selecione o vídeo que deseja executar no player. No caso, _url deve ser definida através deste método, e imediatamente dentro dele, o comando IniciarReproducao deve ser chamado, pois é o fluxo normal de uma ação de carregar mídia num player.
-    [RelayCommand]
-    private void CarregarVideo()
-    {
-        // string dialogueResponse = abrirDialogo();
-        // _url = dialogueResponse;
-        IniciarReproducao();
-    }
-
-    // O comando abaixo inicia a reprodução do vídeo quando clicar no controle associado a este (Binding).
-    [RelayCommand]
-    private void IniciarReproducao()
-    {
-        // "using" aqui é para que a mídia seja descartada da memória uma vez que seja removida do escopo, por exemplo, se o usuário trocar de vídeo, o vídeo anterior não fica na memória.
-        using var media = new Media(LibVLC, new Uri(_url));
-        MediaPlayer.Play(media);
-    }
-
-    [RelayCommand]
-    private void PausarReproducao()
-    {
-        MediaPlayer.Pause();
     }
 }
