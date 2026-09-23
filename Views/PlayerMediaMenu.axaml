@@ -3,7 +3,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:vm="using:IntuitiveMedia.ViewModels"
              xmlns:control="using:IntuitiveMedia.Views"
-             x:DataType="vm:MediaDrawerModel"
+             x:DataType="vm:PlayerViewModel"
              x:Class="IntuitiveMedia.Views.PlayerMediaMenu"
              d:DesignWidth="600" d:DesignHeight="450"
              >

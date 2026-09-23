@@ -4,12 +4,12 @@
              xmlns:vm="using:IntuitiveMedia.ViewModels"
              xmlns:vlc="clr-namespace:LibVLCSharp.Avalonia;assembly=LibVLCSharp.Avalonia"
              xmlns:local="using:IntuitiveMedia.Views"
-             x:DataType="vm:MediaDrawerModel"
+             x:DataType="vm:PlayerViewModel"
              x:Class="IntuitiveMedia.Views.PlayerView"
              d:DesignWidth="600" d:DesignHeight="450"
              >
 
-    <vlc:VideoView MediaPlayer="{Binding MediaPlayer}"
+    <vlc:VideoView x:Name="VideoViewControl"
                    MinWidth="400" MinHeight="300"
                    HorizontalAlignment="Stretch"
                    VerticalAlignment="Stretch">

@@ -5,7 +5,6 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Platform.Storage;
 using IntuitiveMedia.ViewModels;
-using LibVLCSharp.Shared;
 
 namespace IntuitiveMedia.Views;
 
@@ -19,7 +18,7 @@ public partial class PlayerControls : UserControl
 
     private async void CarregarMidia(object? sender, RoutedEventArgs e)
     {
-        if (DataContext is MediaDrawerModel vm)
+        if (DataContext is PlayerViewModel vm)
         {
             var topLevel = TopLevel.GetTopLevel(this); // TopLevel é o window. StorageProvider só existe no window.
 
@@ -50,7 +49,7 @@ public partial class PlayerControls : UserControl
                 return; // pois não se deve seguir adiante caso haja 0 arquivos selecionados, do contrário incorreria em um exception de operação inválida, já que a playlist estaria vazia e o método abaixo tentaria reproduzir uma mídia que não existe.
             }
 
-            vm.PlayMedia(vm.currentMedia);
+            vm.Play(new Uri(vm.currentMedia));
 
             // Console.WriteLine("Clicked the load button to load a video.");
         }
@@ -58,19 +57,19 @@ public partial class PlayerControls : UserControl
 
     private void PausarMidia(object? sender, RoutedEventArgs e)
     {
-        if (DataContext is MediaDrawerModel vm)
+        if (DataContext is PlayerViewModel vm)
         {
-            if (vm.MediaPlayer.IsPlaying)
-                vm.MediaPlayer.Pause();
+            if (vm.State == Core.PlaybackState.Playing)
+                vm.Pause();
             else
-                vm.MediaPlayer.Play();
+                vm.Resume();
 
         }
     }
 
     private void OnMouseOver(object? sender, PointerEventArgs e)
     {
-        if (DataContext is MediaDrawerModel vm)
+        if (DataContext is PlayerViewModel vm)
         {
             vm.IsPointerOverControls = true;
             // Console.WriteLine($"Is mouse over control: {vm.IsPointerOverControls}");
@@ -79,7 +78,7 @@ public partial class PlayerControls : UserControl
 
     private void OnMouseExit(object? sender, PointerEventArgs e)
     {
-        if (DataContext is MediaDrawerModel vm)
+        if (DataContext is PlayerViewModel vm)
         {
             vm.IsPointerOverControls = false;
             // Console.WriteLine($"Is mouse over control: {vm.IsPointerOverControls}");

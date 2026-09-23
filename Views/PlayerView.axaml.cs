@@ -1,19 +1,22 @@
 using System;
 using System.Diagnostics;
-using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Threading;
 using IntuitiveMedia.ViewModels;
+using LibVLCSharp.Shared;
 
 namespace IntuitiveMedia.Views;
 
 public partial class PlayerView : UserControl
 {
     private readonly DispatcherTimer _hideTimer;
+    // private PlayerViewModel? _currentViewModel;
     public PlayerView()
     {
         InitializeComponent();
+
+        DataContextChanged += OnDataContextChanged;
 
         _hideTimer = new DispatcherTimer
         {
@@ -22,20 +25,20 @@ public partial class PlayerView : UserControl
 
         _hideTimer.Tick += HideTimer_Tick;
 
-        // AttachedToVisualTree += (_, _) =>
-        // {
-        //     Debug.WriteLine(DataContext?.GetType().FullName);
-        // };
     }
 
     private void PointerMovedIntoWindow(object? sender, PointerEventArgs e)
     {
-        if (DataContext is MediaDrawerModel vm)
+        if (DataContext is PlayerViewModel vm)
         {
             vm.AreControlsVisible = true;
             // Console.WriteLine("Pointer moved over the window!");
+            // Console.WriteLine($"Should controls turn visible? {vm.AreControlsVisible}");
             // Console.WriteLine($"Is pointer over a control? {vm.IsPointerOverControls}");
+
         }
+        // Console.WriteLine("DataContext is not PlayerViewModel");
+        // Console.WriteLine($"[PlayerView] DataContext mudou para: {DataContext?.GetType().FullName ?? "null"}");
 
         _hideTimer.Stop();
         _hideTimer.Start();
@@ -59,7 +62,7 @@ public partial class PlayerView : UserControl
         _lastDoubleTap = now; // importante atualizar esse parâmetro
 
         // finalmente o bloco que leva ao comando de fullscreen:
-        if (DataContext is MediaDrawerModel vm)
+        if (DataContext is PlayerViewModel vm)
         {
             if (vm.IsPointerOverControls) return; // Pra impedir fullscreen se usuário clicar duas vezes em área de controles.
 
@@ -76,7 +79,7 @@ public partial class PlayerView : UserControl
     {
         _hideTimer.Stop();
 
-        if (DataContext is MediaDrawerModel vm)
+        if (DataContext is PlayerViewModel vm)
         {
             if (!vm.IsPointerOverControls)
             {
@@ -86,6 +89,37 @@ public partial class PlayerView : UserControl
             }
             // Console.WriteLine("Controls remain visible");
         }
-        //END
     }
+
+    private void OnDataContextChanged(object? sender, System.EventArgs e)
+    {
+        if (DataContext is PlayerViewModel vm)
+        {
+            // Cast isolado aqui se o handle nativo mudar de tipo algum dia,
+            // só este arquivo precisa mudar.
+            VideoViewControl.MediaPlayer = vm.NativePlayerHandle as MediaPlayer;
+        }
+    }
+
+    // private void OnPlayClicked(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    // {
+    //     if (DataContext is PlayerViewModel vm && vm.NativePlayerHandle is not null)
+    //     {
+    //         // Exemplo: vm.Play(new Uri("https://urldeexemplo.com/video.mp4"));
+    //     }
+    // }
+
+    // private void OnPauseClicked(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    // {
+    //     if (DataContext is PlayerViewModel vm)
+    //         vm.Pause();
+    // }
+
+    // private void OnStopClicked(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    // {
+    //     if (DataContext is PlayerViewModel vm)
+    //         vm.Stop();
+    // }
+
+    //END
 }
