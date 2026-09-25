@@ -14,6 +14,8 @@ public interface IMediaPlayerService : IDisposable
 
     TimeSpan Duration { get; }
 
+    double Volume { get; } // #### TESTE ###
+
     /// <summary>
     /// Handle opaco para o player nativo (ex: LibVLCSharp.Shared.MediaPlayer).
     /// Só a camada de View (que já referencia LibVLCSharp.Avalonia para hospedar
@@ -21,13 +23,16 @@ public interface IMediaPlayerService : IDisposable
     /// </summary>
     object? NativePlayerHandle { get; }
 
+    //StateChanged se refere a estes estados: Stopped,Opening,Playing,Paused,Ended,Error
     event EventHandler<PlaybackStateChangedEventArgs>? StateChanged;
 
-    /// <summary>Disparado já na UI thread — seguro para bind direto.</summary>
     event EventHandler<TimeSpan>? PositionChanged;
 
-    /// <summary>Disparado já na UI thread — seguro para bind direto.</summary>
+    event EventHandler<TimeSpan>? DurationChanged;
+
     event EventHandler<string>? ErrorOccurred;
+
+    event EventHandler<double>? VolumeChanged; // #### TESTE ###
 
     void Play(Uri source);
 
@@ -38,4 +43,6 @@ public interface IMediaPlayerService : IDisposable
     void Stop();
 
     void Seek(TimeSpan position);
+
+    void SetVolume(double volume); // #### TESTE ###
 }

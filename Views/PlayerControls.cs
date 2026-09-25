@@ -8,7 +8,7 @@ using IntuitiveMedia.ViewModels;
 
 namespace IntuitiveMedia.Views;
 
-// Todo axaml separado precisa de uma classe dessas.
+// Todo UserControl precisa de uma classe
 public partial class PlayerControls : UserControl
 {
     public PlayerControls()
@@ -35,11 +35,11 @@ public partial class PlayerControls : UserControl
             if (files.Count > 0)
             {
                 // acessa a lista e manda somente o path dos arquivos selecionados pra ela.
-                vm._playlist.AddRange(files.Select(file => file.Path.LocalPath));
+                vm.PlayList.AddRange(files.Select(file => file.Path.LocalPath));
 
-                foreach (var file in vm._playlist)
+                foreach (var file in vm.PlayList)
                 {
-                    vm.currentMedia = vm._playlist.Last();
+                    vm.CurrentFile = vm.PlayList.Last();
                     // Console.WriteLine($"You're gonna watch: {file}");
                     // Console.WriteLine($"State of the MediaPlayer: {vm.MediaPlayer.State}");
                 }
@@ -49,7 +49,7 @@ public partial class PlayerControls : UserControl
                 return; // pois não se deve seguir adiante caso haja 0 arquivos selecionados, do contrário incorreria em um exception de operação inválida, já que a playlist estaria vazia e o método abaixo tentaria reproduzir uma mídia que não existe.
             }
 
-            vm.Play(new Uri(vm.currentMedia));
+            vm.Play(new Uri(vm.CurrentFile));
 
             // Console.WriteLine("Clicked the load button to load a video.");
         }

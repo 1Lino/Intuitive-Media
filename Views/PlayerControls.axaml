@@ -5,101 +5,100 @@
              x:DataType="vm:PlayerViewModel"
              x:Class="IntuitiveMedia.Views.PlayerControls"
              d:DesignWidth="600" d:DesignHeight="450"
-             > <!-- Aponta para o namespace e sua respectiva classe PlayerControls-->
+             >
+        <Grid
+                VerticalAlignment="Bottom"
+                HorizontalAlignment="Center"
+                Margin="0,0,0,25"
+                PointerEntered="OnMouseOver"
+                PointerExited="OnMouseExit"
+                ShowGridLines="True"
+                RowSpacing="5"
+                Width="500"
+                Height="100"
+                Background="#7CFF2600">
 
-             <Grid
-                     VerticalAlignment="Bottom"
-                     HorizontalAlignment="Center"
-                     Margin="0,0,0,25"
-                     PointerEntered="OnMouseOver"
-                     PointerExited="OnMouseExit"
-                     ShowGridLines="True"
-                     RowSpacing="5"
-                     Width="500"
-                     Height="100"
-                     Background="#7CFF2600">
+                <Slider Name="TrackSeeker"
+                        Minimum="0"
+                        Maximum="{Binding DurationSeconds}"
+                        Value="{Binding PositionSeconds, Mode=TwoWay}"
+                        Width="450"
+                        Grid.Row="1"
+                        Background="#5A2F12"
+                        Foreground="#FF8800">
+                        <Slider.Resources>
+                                <!--Thumb do track-->
+                                <SolidColorBrush x:Key="SliderThumbBackground">#FFFF7C01</SolidColorBrush>
+                                <SolidColorBrush x:Key="SliderThumbBackgroundPointerOver">#FFCA6200</SolidColorBrush>
+                                <SolidColorBrush x:Key="SliderThumbBackgroundPressed">#FFCA6200</SolidColorBrush>
 
-                     <Slider
-                             Minimum="0"
-                             Maximum="100"
-                             Value="0"
-                             Width="450"
-                             Grid.Row="1"
-                             Background="#5A2F12"
-                             Foreground="#FF8800">
-                             <Slider.Resources>
-                                     <!--Thumb do track-->
-                                     <SolidColorBrush x:Key="SliderThumbBackground">#FFFF7C01</SolidColorBrush>
-                                     <SolidColorBrush x:Key="SliderThumbBackgroundPointerOver">#FFCA6200</SolidColorBrush>
-                                     <SolidColorBrush x:Key="SliderThumbBackgroundPressed">#FFCA6200</SolidColorBrush>
+                                <!--Track da direita-->
+                                <SolidColorBrush x:Key="SliderTrackFill">#FF8800</SolidColorBrush>
+                                <SolidColorBrush x:Key="SliderTrackFillPointerOver">#5A2F12</SolidColorBrush>
+                                <SolidColorBrush x:Key="SliderTrackFillPressed">#5A2F12</SolidColorBrush>
 
-                                     <!--Track da direita-->
-                                     <SolidColorBrush x:Key="SliderTrackFill">#FF8800</SolidColorBrush>
-                                     <SolidColorBrush x:Key="SliderTrackFillPointerOver">#5A2F12</SolidColorBrush>
-                                     <SolidColorBrush x:Key="SliderTrackFillPressed">#5A2F12</SolidColorBrush>
+                                <!--Track da esquerda-->
+                                <SolidColorBrush x:Key="SliderTrackValueFill">#FF8800</SolidColorBrush>
+                                <SolidColorBrush x:Key="SliderTrackValueFillPointerOver">#FF8800</SolidColorBrush>
+                                <SolidColorBrush x:Key="SliderTrackValueFillPressed">#FF8800</SolidColorBrush>
+                        </Slider.Resources>
+                </Slider>
 
-                                     <!--Track da esquerda-->
-                                     <SolidColorBrush x:Key="SliderTrackValueFill">#FF8800</SolidColorBrush>
-                                     <SolidColorBrush x:Key="SliderTrackValueFillPointerOver">#FF8800</SolidColorBrush>
-                                     <SolidColorBrush x:Key="SliderTrackValueFillPressed">#FF8800</SolidColorBrush>
-                             </Slider.Resources>
-                     </Slider>
+                <StackPanel Orientation="Horizontal"
+                            Spacing="12"
+                            Grid.Row="2"
+                            VerticalAlignment="Bottom"
+                            HorizontalAlignment="Center"
+                            Margin="10">
 
-                     <StackPanel Orientation="Horizontal"
-                                 Spacing="12"
-                                 Grid.Row="2"
-                                 VerticalAlignment="Bottom"
-                                 HorizontalAlignment="Center"
-                                 Margin="10">
+                        <Button Content="Load"
+                                Width="50"
+                                Height="40"
+                                Click="CarregarMidia"></Button>
 
-                             <Button Content="Load"
-                                     Width="50"
-                                     Height="40"
-                                     Click="CarregarMidia"></Button>
+                        <Button Content="Prev"
+                                Width="50"
+                                Height="40"/>
 
-                             <Button Content="Prev"
-                                     Width="50"
-                                     Height="40"/>
+                        <Button Content="Play"
+                                Width="60"
+                                Height="45"
+                                Click="PausarMidia"/>
 
-                             <Button Content="Play"
-                                     Width="60"
-                                     Height="45"
-                                     Click="PausarMidia"/>
+                        <Button Content="Next"
+                                Width="50"
+                                Height="40"/>
 
-                             <Button Content="Next"
-                                     Width="50"
-                                     Height="40"/>
+                        <Button Content="Volume"
+                                Width="50"
+                                Height="40"/>
 
-                             <Button Content="Volume"
-                                     Width="50"
-                                     Height="40"/>
+                        <Slider Name="VolumeControl"
+                                Minimum="0"
+                                Maximum="100"
+                                Value="{Binding Volume, Mode=TwoWay}"
+                                Width="100"
+                                Background="#5A2F12"
+                                Foreground="#FF8800">
+                                <Slider.Resources>
+                                        <!--Thumb do track-->
+                                        <SolidColorBrush x:Key="SliderThumbBackground">#FFFF7C01</SolidColorBrush>
+                                        <SolidColorBrush x:Key="SliderThumbBackgroundPointerOver">#FFCA6200</SolidColorBrush>
+                                        <SolidColorBrush x:Key="SliderThumbBackgroundPressed">#FFCA6200</SolidColorBrush>
 
-                             <Slider Name="VolumeControl"
-                                     Minimum="0"
-                                     Maximum="100"
-                                     Value="50"
-                                     Width="100"
-                                     Background="#5A2F12"
-                                     Foreground="#FF8800">
-                                     <Slider.Resources>
-                                             <!--Thumb do track-->
-                                             <SolidColorBrush x:Key="SliderThumbBackground">#FFFF7C01</SolidColorBrush>
-                                             <SolidColorBrush x:Key="SliderThumbBackgroundPointerOver">#FFCA6200</SolidColorBrush>
-                                             <SolidColorBrush x:Key="SliderThumbBackgroundPressed">#FFCA6200</SolidColorBrush>
+                                        <!--Track da direita-->
+                                        <SolidColorBrush x:Key="SliderTrackFill">#FF8800</SolidColorBrush>
+                                        <SolidColorBrush x:Key="SliderTrackFillPointerOver">#5A2F12</SolidColorBrush>
+                                        <SolidColorBrush x:Key="SliderTrackFillPressed">#5A2F12</SolidColorBrush>
 
-                                             <!--Track da direita-->
-                                             <SolidColorBrush x:Key="SliderTrackFill">#FF8800</SolidColorBrush>
-                                             <SolidColorBrush x:Key="SliderTrackFillPointerOver">#5A2F12</SolidColorBrush>
-                                             <SolidColorBrush x:Key="SliderTrackFillPressed">#5A2F12</SolidColorBrush>
+                                        <!--Track da esquerda-->
+                                        <SolidColorBrush x:Key="SliderTrackValueFill">#FF8800</SolidColorBrush>
+                                        <SolidColorBrush x:Key="SliderTrackValueFillPointerOver">#FF8800</SolidColorBrush>
+                                        <SolidColorBrush x:Key="SliderTrackValueFillPressed">#FF8800</SolidColorBrush>
+                                </Slider.Resources>
+                        </Slider>
 
-                                             <!--Track da esquerda-->
-                                             <SolidColorBrush x:Key="SliderTrackValueFill">#FF8800</SolidColorBrush>
-                                             <SolidColorBrush x:Key="SliderTrackValueFillPointerOver">#FF8800</SolidColorBrush>
-                                             <SolidColorBrush x:Key="SliderTrackValueFillPressed">#FF8800</SolidColorBrush>
-                                     </Slider.Resources>
-                             </Slider>
-
-                     </StackPanel>
-             </Grid>
+                </StackPanel>
+        </Grid>
         <!--END-->
 </UserControl>

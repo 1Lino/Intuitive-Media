@@ -41,6 +41,12 @@ public sealed class VlcMediaPlayerService : IMediaPlayerService
             var position = TimeSpan.FromMilliseconds(e.Time);
             Dispatcher.UIThread.Post(() => PositionChanged?.Invoke(this, position));
         };
+
+        _mediaPlayer.LengthChanged += (_, e) =>
+        {
+            var duration = TimeSpan.FromMilliseconds(Math.Max(0, e.Length));
+            Dispatcher.UIThread.Post(() => DurationChanged?.Invoke(this, duration));
+        };
     }
 
     public CoreState State { get; private set; } = CoreState.Stopped;
@@ -48,6 +54,7 @@ public sealed class VlcMediaPlayerService : IMediaPlayerService
     public TimeSpan Position => TimeSpan.FromMilliseconds(_mediaPlayer.Time);
 
     public TimeSpan Duration => TimeSpan.FromMilliseconds(_mediaPlayer.Length);
+    public double Volume => _mediaPlayer.Volume; // #### TESTE ####
 
     /// <summary>
     /// Handle opaco (na prática, o LibVLCSharp.Shared.MediaPlayer) exposto
@@ -57,7 +64,10 @@ public sealed class VlcMediaPlayerService : IMediaPlayerService
 
     public event EventHandler<PlaybackStateChangedEventArgs>? StateChanged;
     public event EventHandler<TimeSpan>? PositionChanged;
+    public event EventHandler<TimeSpan>? DurationChanged;
     public event EventHandler<string>? ErrorOccurred;
+
+    public event EventHandler<double>? VolumeChanged;
 
 
     public void Play(Uri source)
@@ -82,6 +92,17 @@ public sealed class VlcMediaPlayerService : IMediaPlayerService
     public void Stop() => _mediaPlayer.Stop();
 
     public void Seek(TimeSpan position) => _mediaPlayer.Time = (long)position.TotalMilliseconds;
+
+    public void SetVolume(double volume)
+    {
+        var normalizedVolume = Math.Clamp((int)volume, 0, 100);
+        _mediaPlayer.Volume = normalizedVolume;
+
+        if (Dispatcher.UIThread.CheckAccess())
+            VolumeChanged?.Invoke(this, normalizedVolume);
+        else
+            Dispatcher.UIThread.Post(() => VolumeChanged?.Invoke(this, normalizedVolume));
+    }
 
     private void RaiseStateChanged(CoreState newState)
     {
@@ -108,4 +129,5 @@ public sealed class VlcMediaPlayerService : IMediaPlayerService
         _currentMedia?.Dispose();
         _mediaPlayer.Dispose();
     }
+
 }
