@@ -38,4 +38,4 @@ Repositório oficial: [github.com/microsoft/fluentui-system-icons](https://githu
 
 ### Licença
 
-O código é livre e pode ser utilizado por qualquer um para uso pessoal, para estudos, como referência ou como base para outro projeto qualquer, caso seja do interesse.
+O código é livre para uso pessoal, para estudos, como referência ou como base para outro projeto qualquer, caso seja do interesse.

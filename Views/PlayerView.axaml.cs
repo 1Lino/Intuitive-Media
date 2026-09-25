@@ -11,7 +11,6 @@ namespace IntuitiveMedia.Views;
 public partial class PlayerView : UserControl
 {
     private readonly DispatcherTimer _hideTimer;
-    // private PlayerViewModel? _currentViewModel;
     public PlayerView()
     {
         InitializeComponent();
@@ -27,11 +26,15 @@ public partial class PlayerView : UserControl
 
     }
 
-    private void PointerMovedIntoWindow(object? sender, PointerEventArgs e)
+    private void PointerMovedIntoOverlay(object? sender, PointerEventArgs e)
     {
         if (DataContext is PlayerViewModel vm)
         {
             vm.AreControlsVisible = true;
+
+            // poderia ser sender.Cursor, o que faria referência ao objeto que disparou o evento, aqui, no caso, ControlsOverlay.
+            ControlsOverlay.Cursor = new Cursor(StandardCursorType.Arrow); // restaura cursor ao mover ponteiro.
+
             // Console.WriteLine("Pointer moved over the window!");
             // Console.WriteLine($"Should controls turn visible? {vm.AreControlsVisible}");
             // Console.WriteLine($"Is pointer over a control? {vm.IsPointerOverControls}");
@@ -84,6 +87,8 @@ public partial class PlayerView : UserControl
             if (!vm.IsPointerOverControls)
             {
                 vm.AreControlsVisible = false;
+
+                ControlsOverlay.Cursor = new Cursor(StandardCursorType.None); // faz o cursor sumir
                 // Console.WriteLine("Controls are now invisible");
                 return;
             }
@@ -100,26 +105,6 @@ public partial class PlayerView : UserControl
             VideoViewControl.MediaPlayer = vm.NativePlayerHandle as MediaPlayer;
         }
     }
-
-    // private void OnPlayClicked(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
-    // {
-    //     if (DataContext is PlayerViewModel vm && vm.NativePlayerHandle is not null)
-    //     {
-    //         // Exemplo: vm.Play(new Uri("https://urldeexemplo.com/video.mp4"));
-    //     }
-    // }
-
-    // private void OnPauseClicked(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
-    // {
-    //     if (DataContext is PlayerViewModel vm)
-    //         vm.Pause();
-    // }
-
-    // private void OnStopClicked(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
-    // {
-    //     if (DataContext is PlayerViewModel vm)
-    //         vm.Stop();
-    // }
 
     //END
 }
