@@ -1,50 +1,45 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:vm="using:IntuitiveMedia.ViewModels"
+             xmlns:m="using:IntuitiveMedia.Models"
              x:DataType="vm:PlayerViewModel"
-             x:Class="IntuitiveMedia.Views.MediaDrawer"
-             >
+             x:Class="IntuitiveMedia.Views.MediaDrawer">
 
-      <DockPanel Name="VideoDrawer"
-                 Width="400" Height="150"
-                 Background="LightGray"
-                 Margin="0 50"
-                 >
-            <ScrollViewer HorizontalScrollBarVisibility="Auto">
-                  <StackPanel Orientation="Horizontal">
-                        <!-- Basicamente estes StackPanel abaixo será o modelo de componente que deverá ser criado aqui dinamicamente conforme a playlist. Onde TextBlock deve vir o nome do vídeo, e no lugar de Button deve vir uma thumbnail do vídeo com propriedade Click-->
-                        <StackPanel Margin="5" VerticalAlignment="Center">
-                              <TextBlock Text="Video name" ></TextBlock>
-                              <Button Content="Video 1"></Button>
-                        </StackPanel>
+      <DockPanel Name="VideoDrawer" Width="400" Height="150"
+                 Background="LightGray" Margin="0 50">
+            <ScrollViewer HorizontalScrollBarVisibility="Auto"
+                          VerticalScrollBarVisibility="Disabled">
 
-                        <StackPanel Margin="5" VerticalAlignment="Center">
-                              <TextBlock Text="Video name"></TextBlock>
-                              <Button Content="Video 2"></Button>
-                        </StackPanel>
+                  <ItemsControl x:Name="VideoList" ItemsSource="{Binding Playlist}">
+                        <ItemsControl.ItemsPanel>
+                              <ItemsPanelTemplate>
+                                    <StackPanel Orientation="Horizontal" />
+                              </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
 
-                        <StackPanel Margin="5" VerticalAlignment="Center">
-                              <TextBlock Text="Video name"></TextBlock>
-                              <Button Content="Video 3"></Button>
-                        </StackPanel>
+                        <ItemsControl.ItemTemplate>
+                              <DataTemplate x:DataType="m:VideoItem">
+                                    <Border Margin="5" Padding="4"
+                                            Background="Transparent"
+                                            Cursor="Hand"
+                                            DragDrop.AllowDrop="True"
+                                            PointerPressed="Item_PointerPressed"
+                                            PointerMoved="Item_PointerMoved"
+                                            PointerReleased="Item_PointerReleased"
+                                            DragDrop.DragOver="Item_DragOver"
+                                            DragDrop.Drop="Item_Drop">
+                                          <StackPanel Spacing="4" VerticalAlignment="Center">
+                                                <TextBlock Text="{Binding Title}" HorizontalAlignment="Center" />
+                                                <Border Width="100" Height="60" Background="Gray" CornerRadius="4"
+                                                        ClipToBounds="True">
+                                                      <Image Source="{Binding Thumbnail}" Stretch="UniformToFill" />
+                                                </Border>
+                                          </StackPanel>
+                                    </Border>
+                              </DataTemplate>
+                        </ItemsControl.ItemTemplate>
 
-                        <StackPanel Margin="5" VerticalAlignment="Center">
-                              <TextBlock Text="Video name"></TextBlock>
-                              <Button Content="Video 4"></Button>
-                        </StackPanel>
-
-                        <StackPanel Margin="5" VerticalAlignment="Center">
-                              <TextBlock Text="Video name"></TextBlock>
-                              <Button Content="Video 5"></Button>
-                        </StackPanel>
-
-                        <StackPanel Margin="5" VerticalAlignment="Center">
-                              <TextBlock Text="Video name"></TextBlock>
-                              <Button Content="Video 6"></Button>
-                        </StackPanel>
-                  </StackPanel>
+                  </ItemsControl>
             </ScrollViewer>
       </DockPanel>
-
 </UserControl>

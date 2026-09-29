@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using IntuitiveMedia.Core;
+using IntuitiveMedia.Models;
 
 namespace IntuitiveMedia.ViewModels;
 
@@ -10,6 +12,15 @@ namespace IntuitiveMedia.ViewModels;
 /// já chegam despachados na UI thread pela implementação concreta.
 public sealed partial class PlayerViewModel : ViewModelBase, IDisposable
 {
+    // ObservableCollection torna viável o sistema de reposicionamento de vídeos na playlist por meio de draging
+    public ObservableCollection<VideoItem> Playlist { get; } = new()
+    {
+        new VideoItem { Title = "Video 1" },
+        new VideoItem { Title = "Video 2" },
+        new VideoItem { Title = "Video 3" },
+        new VideoItem { Title = "Video 4" },
+    };
+
     // Ao invés de [ObservableProperty], deve-se usar essa estrutura aqui, que segue INotifyPropertyChanged
     // do ViewModelBase, que basicamente faz o serviço de notificar ao binding da UI quando estas propriedades são mudadas.
     // O que fica exposto para a UI é o AreControlsVisible, por exemplo, enquanto que _areControlsVisible é interno. Só não funciona com listas, pois SetField não foi criado levando em conta listas, apenas valores individuais.
