@@ -20,6 +20,7 @@ public partial class MediaDrawer : UserControl
         DataFormat.CreateStringApplicationFormat("intuitivemedia-video-item");
 
     private const double DragThreshold = 8;
+    private Control? _pressedControl;
 
     private VideoItem? _pressedItem;
     private VideoItem? _draggedItem;
@@ -36,6 +37,7 @@ public partial class MediaDrawer : UserControl
             e.GetCurrentPoint(c).Properties.IsLeftButtonPressed)
         {
             _pressedItem = item;
+            _pressedControl = c;
             _pressedArgs = e;
             _dragStart = e.GetPosition(this);
         }
@@ -53,32 +55,77 @@ public partial class MediaDrawer : UserControl
 
         _draggedItem = _pressedItem;
         var trigger = _pressedArgs; // trigger => PointerPressedEventArgs
+        var draggedControl = _pressedControl;
         _pressedItem = null;
         _pressedArgs = null;
+        _pressedControl = null;
 
-        using var transfer = new DataTransfer();
-        transfer.Add(DataTransferItem.Create(DragFormat, _draggedItem.Title));
+        if (draggedControl is not null)
+            SetClass(draggedControl, "dragging", true);
 
-        await DragDrop.DoDragDropAsync(trigger, transfer, DragDropEffects.Move);
+        try
+        {
+            using var transfer = new DataTransfer();
+            transfer.Add(DataTransferItem.Create(DragFormat, _draggedItem.Title));
 
-        _draggedItem = null;
+            await DragDrop.DoDragDropAsync(trigger, transfer, DragDropEffects.Move);
+        }
+        finally
+        {
+            if (draggedControl is not null)
+                SetClass(draggedControl, "dragging", false);
+            _draggedItem = null;
+        }
+
+        // using var transfer = new DataTransfer();
+        // transfer.Add(DataTransferItem.Create(DragFormat, _draggedItem.Title));
+
+        // await DragDrop.DoDragDropAsync(trigger, transfer, DragDropEffects.Move);
+
+        // _draggedItem = null;
+    }
+
+    private static void SetClass(Control control, string name, bool enabled)
+    {
+        if (enabled)
+        {
+            if (!control.Classes.Contains(name))
+                control.Classes.Add(name);
+        }
+        else
+        {
+            control.Classes.Remove(name);
+        }
     }
 
     private void Item_PointerReleased(object? sender, PointerReleasedEventArgs e)
     {
         _pressedItem = null;
         _pressedArgs = null;
+        _pressedControl = null;
     }
 
     private void Item_DragOver(object? sender, DragEventArgs e)
     {
-        e.DragEffects = e.DataTransfer.Contains(DragFormat)
-            ? DragDropEffects.Move
-            : DragDropEffects.None;
+        var valid = e.DataTransfer.Contains(DragFormat);
+        e.DragEffects = valid ? DragDropEffects.Move : DragDropEffects.None;
+
+        // destaca o alvo, exceto o próprio item arrastado
+        if (sender is Control { DataContext: VideoItem target } c)
+            SetClass(c, "dragover", valid && !ReferenceEquals(target, _draggedItem));
+    }
+
+    private void Item_DragLeave(object? sender, DragEventArgs e)
+    {
+        if (sender is Control c)
+            SetClass(c, "dragover", false);
     }
 
     private void Item_Drop(object? sender, DragEventArgs e)
     {
+        if (sender is Control c)
+            SetClass(c, "dragover", false);
+
         if (Vm is null ||
             _draggedItem is not { } source ||
             sender is not Control { DataContext: VideoItem target } ||

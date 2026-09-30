@@ -5,6 +5,32 @@
              x:DataType="vm:PlayerViewModel"
              x:Class="IntuitiveMedia.Views.MediaDrawer">
 
+      <UserControl.Styles>
+
+            <!-- Painel de estilos -->
+            <Style Selector="Border.item">
+                  <Setter Property="Background" Value="Transparent" />
+                  <Setter Property="BorderThickness" Value="2" />
+                  <Setter Property="BorderBrush" Value="Transparent" />
+                  <Setter Property="CornerRadius" Value="6" />
+                  <Setter Property="Transitions">
+                        <Transitions>
+                              <DoubleTransition Property="Opacity" Duration="0:0:0.15" />
+                        </Transitions>
+                  </Setter>
+            </Style>
+
+            <Style Selector="Border.item.dragging">
+                  <Setter Property="Opacity" Value="0.4" />
+            </Style>
+
+            <Style Selector="Border.item.dragover">
+                  <Setter Property="BorderBrush" Value="DodgerBlue" />
+                  <Setter Property="Background" Value="#330078D7" />
+            </Style>
+      </UserControl.Styles>
+
+      <!-- Painel principal -->
       <DockPanel Name="VideoDrawer" Width="400" Height="150"
                  Background="LightGray" Margin="0 50">
             <ScrollViewer HorizontalScrollBarVisibility="Auto"
@@ -19,14 +45,15 @@
 
                         <ItemsControl.ItemTemplate>
                               <DataTemplate x:DataType="m:VideoItem">
-                                    <Border Margin="5" Padding="4"
-                                            Background="Transparent"
+                                    <Border Classes="item" Margin="5" Padding="4"
+
                                             Cursor="Hand"
                                             DragDrop.AllowDrop="True"
                                             PointerPressed="Item_PointerPressed"
                                             PointerMoved="Item_PointerMoved"
                                             PointerReleased="Item_PointerReleased"
                                             DragDrop.DragOver="Item_DragOver"
+                                            DragDrop.DragLeave="Item_DragLeave"
                                             DragDrop.Drop="Item_Drop">
                                           <StackPanel Spacing="4" VerticalAlignment="Center">
                                                 <TextBlock Text="{Binding Title}" HorizontalAlignment="Center" />
