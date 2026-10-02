@@ -13,13 +13,7 @@ namespace IntuitiveMedia.ViewModels;
 public sealed partial class PlayerViewModel : ViewModelBase, IDisposable
 {
     // ObservableCollection torna viável o sistema de reposicionamento de vídeos na playlist por meio de draging
-    public ObservableCollection<VideoItem> Playlist { get; } = new()
-    {
-        new VideoItem { Title = "Video 1" },
-        new VideoItem { Title = "Video 2" },
-        new VideoItem { Title = "Video 3" },
-        new VideoItem { Title = "Video 4" },
-    };
+    public ObservableCollection<VideoItem> Playlist { get; } = new();
 
     // Ao invés de [ObservableProperty], deve-se usar essa estrutura aqui, que segue INotifyPropertyChanged
     // do ViewModelBase, que basicamente faz o serviço de notificar ao binding da UI quando estas propriedades são mudadas.
@@ -27,7 +21,7 @@ public sealed partial class PlayerViewModel : ViewModelBase, IDisposable
     private readonly IMediaPlayerService _player;
     private bool _autoRepeat = false;
     private bool _isPlaylistEnd = true;
-    private string _currentFile = string.Empty;
+    private VideoItem _currentFile;
     private PlaybackState _state;
     private TimeSpan _position;
     private TimeSpan _duration;
@@ -49,8 +43,6 @@ public sealed partial class PlayerViewModel : ViewModelBase, IDisposable
         _player.SetVolume(_volume);
     }
 
-    public List<string> PlayList { get; set; } = new();
-
     public bool AutoRepeat
     {
         get => _autoRepeat;
@@ -63,7 +55,7 @@ public sealed partial class PlayerViewModel : ViewModelBase, IDisposable
         set => SetField(ref _isPlaylistEnd, value);
     }
 
-    public string CurrentFile
+    public VideoItem CurrentFile
     {
         get => _currentFile;
         set => SetField(ref _currentFile, value);
@@ -143,12 +135,12 @@ public sealed partial class PlayerViewModel : ViewModelBase, IDisposable
     // A View faz o cast; o ViewModel permanece agnóstico ao tipo real.
     public object? NativePlayerHandle => _player.NativePlayerHandle;
 
-    // Começar a testar isto tudo:
-    public void Play(Uri source)
+    public void Play(VideoItem video)
     {
+        Console.WriteLine(video != null);
         Position = TimeSpan.Zero;
         Duration = TimeSpan.Zero;
-        _player.Play(source);
+        _player.Play(new Uri(video.Path));
     }
 
     public void Pause() => _player.Pause();
@@ -196,13 +188,13 @@ public sealed partial class PlayerViewModel : ViewModelBase, IDisposable
         else if (IsPlaylistEnd && AutoRepeat)
         {
             Console.WriteLine("Reached End of Play! Replaying...");
-            Play(new Uri(CurrentFile));
+            Play(CurrentFile);
         }
 
         if (IsPlaylistEnd)
         {
             if (AutoRepeat)
-                Play(new Uri(CurrentFile));
+                Play(CurrentFile);
             else
                 Stop();
         }

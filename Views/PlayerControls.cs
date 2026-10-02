@@ -1,9 +1,13 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Platform.Storage;
+using IntuitiveMedia.Models;
+using IntuitiveMedia.Services;
 using IntuitiveMedia.ViewModels;
 
 namespace IntuitiveMedia.Views;
@@ -18,10 +22,12 @@ public partial class PlayerControls : UserControl
 
     private async void CarregarMidia(object? sender, RoutedEventArgs e)
     {
-        if (DataContext is PlayerViewModel vm)
+        try
         {
-            var topLevel = TopLevel.GetTopLevel(this); // TopLevel é o window. StorageProvider só existe no window.
+            if (DataContext is not PlayerViewModel vm)
+                return;
 
+            var topLevel = TopLevel.GetTopLevel(this);
             if (topLevel == null)
                 return;
 
@@ -29,29 +35,35 @@ public partial class PlayerControls : UserControl
                 new FilePickerOpenOptions
                 {
                     Title = "Selecionar arquivo",
-                    AllowMultiple = false // por enquanto, só será permitido 1 arquivo, para fins de teste, mas será possível selecionar vários para uma playlist, futuramente.
+                    AllowMultiple = true
                 });
 
-            if (files.Count > 0)
-            {
-                // acessa a lista e manda somente o path dos arquivos selecionados pra ela.
-                vm.PlayList.AddRange(files.Select(file => file.Path.LocalPath));
+            if (files.Count == 0)
+                return;
 
-                foreach (var file in vm.PlayList)
-                {
-                    vm.CurrentFile = vm.PlayList.Last();
-                    // Console.WriteLine($"You're gonna watch: {file}");
-                    // Console.WriteLine($"State of the MediaPlayer: {vm.MediaPlayer.State}");
-                }
-            }
-            else
+            var novos = new List<VideoItem>(); // lista que será iterada para gerar as thumbnails
+
+            vm.Playlist.Clear(); // zera a playlista toda vez que o usuário abrir o modal de seleção de vídeo.
+            foreach (var file in files)
             {
-                return; // pois não se deve seguir adiante caso haja 0 arquivos selecionados, do contrário incorreria em um exception de operação inválida, já que a playlist estaria vazia e o método abaixo tentaria reproduzir uma mídia que não existe.
+                var item = new VideoItem { Title = file.Name, Path = file.Path.ToString() };
+                vm.Playlist.Add(item);
+                novos.Add(item);
             }
 
-            vm.Play(new Uri(vm.CurrentFile));
+            vm.CurrentFile = vm.Playlist.Last();
+            vm.Play(vm.CurrentFile);
 
-            // Console.WriteLine("Clicked the load button to load a video.");
+            // miniaturas: uma por vez, aparecem conforme ficam prontas
+            foreach (var item in novos)
+            {
+                item.PropertyChanged += (_, e) => Console.WriteLine($"[VideoItem] mudou: {e.PropertyName}");
+                item.Thumbnail = await ThumbnailService.GenerateAsync(item.Path);
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex);   // exceção em async void sem try/catch derruba o app
         }
     }
 
