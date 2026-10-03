@@ -51,13 +51,13 @@ public partial class PlayerControls : UserControl
                 novos.Add(item);
             }
 
-            vm.CurrentFile = vm.Playlist.Last();
+            vm.CurrentFile = vm.Playlist[0];
             vm.Play(vm.CurrentFile);
 
             // miniaturas: uma por vez, aparecem conforme ficam prontas
             foreach (var item in novos)
             {
-                item.PropertyChanged += (_, e) => Console.WriteLine($"[VideoItem] mudou: {e.PropertyName}");
+                // item.PropertyChanged += (_, e) => Console.WriteLine($"[VideoItem] mudou: {e.PropertyName}");
                 item.Thumbnail = await ThumbnailService.GenerateAsync(item.Path);
             }
         }

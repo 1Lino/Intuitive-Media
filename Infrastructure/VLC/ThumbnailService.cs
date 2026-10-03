@@ -28,18 +28,18 @@ public static class ThumbnailService
         if (Uri.TryCreate(videoPath, UriKind.Absolute, out var uri) && uri.IsFile)
             videoPath = uri.LocalPath;
 
-        Console.WriteLine($"[Thumb] iniciando: {videoPath} (existe: {File.Exists(videoPath)})");
+        // Console.WriteLine($"[Thumb] iniciando: {videoPath} (existe: {File.Exists(videoPath)})");
 
         await Gate.WaitAsync();
         try
         {
             var bmp = await CaptureAsync(videoPath);
-            Console.WriteLine($"[Thumb] resultado: {(bmp is null ? "NULL (timeout/sem frame)" : "ok")}");
+            // Console.WriteLine($"[Thumb] resultado: {(bmp is null ? "NULL (timeout/sem frame)" : "ok")}");
             return bmp;
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"[Thumb] ERRO: {ex}");
+            // Console.WriteLine($"[Thumb] ERRO: {ex}");
             return null;
         }
         finally { Gate.Release(); }
@@ -74,7 +74,7 @@ public static class ThumbnailService
                 var score = Score(frame);
                 if (score > bestScore) { best = frame; bestScore = score; }
             }
-            Console.WriteLine($"[Thumb] início {start:F1}s, melhor nota até agora: {bestScore:F1}");
+            // Console.WriteLine($"[Thumb] início {start:F1}s, melhor nota até agora: {bestScore:F1}");
             if (bestScore >= GoodEnough) break;
         }
 

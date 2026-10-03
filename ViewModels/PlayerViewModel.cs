@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 using CommunityToolkit.Mvvm.ComponentModel;
 using IntuitiveMedia.Core;
+using IntuitiveMedia.Infrastructure.VLC;
 using IntuitiveMedia.Models;
 
 namespace IntuitiveMedia.ViewModels;
@@ -19,8 +21,8 @@ public sealed partial class PlayerViewModel : ViewModelBase, IDisposable
     // do ViewModelBase, que basicamente faz o serviço de notificar ao binding da UI quando estas propriedades são mudadas.
     // O que fica exposto para a UI é o AreControlsVisible, por exemplo, enquanto que _areControlsVisible é interno. Só não funciona com listas, pois SetField não foi criado levando em conta listas, apenas valores individuais.
     private readonly IMediaPlayerService _player;
-    private bool _autoRepeat = false;
-    private bool _isPlaylistEnd = true;
+    private bool _autoRepeat = false; // TODO: tem que implementar as mecânicas envolvendo autoRepeat e plalistend.
+    private bool _isPlaylistEnd = false;
     private VideoItem _currentFile;
     private PlaybackState _state;
     private TimeSpan _position;
@@ -178,19 +180,6 @@ public sealed partial class PlayerViewModel : ViewModelBase, IDisposable
 
     private void ReachedEndOfPlay()
     {
-        // se o vídeo estiver no final da playlist e com autoRepeat desativado.
-        if (IsPlaylistEnd && !AutoRepeat)
-        {
-            // O callback vem de uma thread do VLC. Adiar a operação evita
-            // reentrar no ciclo interno de reprodução enquanto ele termina.
-            Stop();
-        }
-        else if (IsPlaylistEnd && AutoRepeat)
-        {
-            Console.WriteLine("Reached End of Play! Replaying...");
-            Play(CurrentFile);
-        }
-
         if (IsPlaylistEnd)
         {
             if (AutoRepeat)
@@ -200,7 +189,37 @@ public sealed partial class PlayerViewModel : ViewModelBase, IDisposable
         }
         else
         {
-            // TODO...
+            if (AutoRepeat)
+            {
+                Play(CurrentFile);
+            }
+            else
+            {
+                int currentVideoIndex = Playlist.IndexOf(CurrentFile);
+                int playlistLastIndex = Playlist.IndexOf(Playlist.Last());
+
+                // Console.WriteLine($"\nVideo que acabou de tocar: {CurrentFile.Title}\nVideo Index: {currentVideoIndex}");
+
+                // Analisa se o índice para o próximo vídeo é menor ou igual ao índice do último vídeo da playlist
+                // se sim, segue com a incrementação. Se não, o índice do próximo vídeo não atualiza.
+                int nextVideoIndex = currentVideoIndex + 1 <= playlistLastIndex ? currentVideoIndex + 1 : currentVideoIndex;
+
+                VideoItem nextVideo = Playlist[nextVideoIndex];
+
+                // Console.WriteLine($"Video pra tocar agora: {nextVideo.Title}\nVideo Index: {nextVideoIndex}");
+
+                Play(nextVideo);
+
+                // isto aqui é importante, do contrário "CurrentFile" será sempre o vídeo de índice 0.
+                CurrentFile = nextVideo;
+
+                // checagem básica de fim de playlist:
+                if (nextVideoIndex == playlistLastIndex)
+                {
+                    IsPlaylistEnd = true;
+                }
+            }
+
         }
     }
 
