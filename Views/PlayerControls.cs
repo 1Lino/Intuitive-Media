@@ -79,6 +79,37 @@ public partial class PlayerControls : UserControl
         }
     }
 
+    // NOTA: observar se existe algum problema de race condition no uso destes métodos pelo evento de clique dos botões, ou qualquer outra anormalidade.
+    private void ProximaMidia(object? sender, RoutedEventArgs e)
+    {
+        if (DataContext is PlayerViewModel vm)
+        {
+            int currentVideoIndex = vm.Playlist.IndexOf(vm.CurrentFile);
+            int playlistLastIndex = vm.Playlist.IndexOf(vm.Playlist.Last());
+            int nextVideoIndex = currentVideoIndex + 1 <= playlistLastIndex ? currentVideoIndex + 1 : currentVideoIndex;
+
+            VideoItem nextVideo = vm.Playlist[nextVideoIndex];
+            vm.Play(nextVideo);
+
+            vm.CurrentFile = nextVideo;
+        }
+    }
+
+    private void MidiaAnterior(object? sender, RoutedEventArgs e)
+    {
+        if (DataContext is PlayerViewModel vm)
+        {
+            int currentVideoIndex = vm.Playlist.IndexOf(vm.CurrentFile);
+            int playlistFirstIndex = vm.Playlist.IndexOf(vm.Playlist.First());
+            int previousVideoIndex = currentVideoIndex - 1 >= playlistFirstIndex ? currentVideoIndex - 1 : currentVideoIndex;
+
+            VideoItem previousVideo = vm.Playlist[previousVideoIndex];
+            vm.Play(previousVideo);
+
+            vm.CurrentFile = previousVideo;
+        }
+    }
+
     private void OnMouseOver(object? sender, PointerEventArgs e)
     {
         if (DataContext is PlayerViewModel vm)

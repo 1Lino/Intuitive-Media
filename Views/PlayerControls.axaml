@@ -58,7 +58,8 @@
 
                         <Button Content="Prev"
                                 Width="50"
-                                Height="40"/>
+                                Height="40"
+                                Click="MidiaAnterior" />
 
                         <Button Content="Play"
                                 Width="60"
@@ -67,7 +68,8 @@
 
                         <Button Content="Next"
                                 Width="50"
-                                Height="40"/>
+                                Height="40"
+                                Click="ProximaMidia" />
 
                         <Button Content="Volume"
                                 Width="50"
