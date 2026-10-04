@@ -2,10 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Windows.Input;
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using IntuitiveMedia.Core;
 using IntuitiveMedia.Infrastructure.VLC;
 using IntuitiveMedia.Models;
+using LibVLCSharp.Shared;
 
 namespace IntuitiveMedia.ViewModels;
 
@@ -22,6 +25,9 @@ public sealed partial class PlayerViewModel : ViewModelBase, IDisposable
     // O que fica exposto para a UI é o AreControlsVisible, por exemplo, enquanto que _areControlsVisible é interno. Só não funciona com listas, pois SetField não foi criado levando em conta listas, apenas valores individuais.
     private readonly IMediaPlayerService _player;
     private bool _autoRepeat = false; // TODO: tem que implementar as mecânicas envolvendo autoRepeat e plalistend.
+    private bool _autoplay = false;
+    private bool _loop = false;
+    private bool _shuffle = false;
     private bool _isPlaylistEnd = false;
     private VideoItem _currentFile;
     private PlaybackState _state;
@@ -29,11 +35,21 @@ public sealed partial class PlayerViewModel : ViewModelBase, IDisposable
     private TimeSpan _duration;
     private int _volume = 80;
     private string? _lastError;
+    private bool _isMouseDragging;
     private bool _isPointerOverControls;
+    private bool _isMediaOptionsOn;
     private bool _areControlsVisible;
     private bool _isVideoDrawerOn;
+    private MediaOptions _mediaOptions = new MediaOptions
+    {
+        autoPlay = "Autoplay",
+        autoRepeat = "Repeat",
+        loop = "Playlist Loop",
+        shuffle = "Random"
+    };
 
     // Adiante tudo os que ficará exposto no para o resto do projeto:
+
     public PlayerViewModel(IMediaPlayerService player)
     {
         _player = player;
@@ -45,10 +61,66 @@ public sealed partial class PlayerViewModel : ViewModelBase, IDisposable
         _player.SetVolume(_volume);
     }
 
+    public ICommand ToggleAutoRepeatOption => new RelayCommand(() =>
+    {
+        AutoRepeat = !AutoRepeat;
+        MediaOptions.autoRepeat = AutoRepeat ? "✓ Repeat" : "Repeat";
+
+        IsMediaOptionsOn = false;
+    });
+
+    public ICommand ToggleAutoPlayOption => new RelayCommand(() =>
+    {
+        AutoPlay = !AutoPlay;
+        MediaOptions.autoPlay = AutoPlay ? "✓ Autoplay" : "Autoplay";
+
+        IsMediaOptionsOn = false;
+    });
+
+    public ICommand ToggleLoopOption => new RelayCommand(() =>
+    {
+        Loop = !Loop;
+        MediaOptions.loop = Loop ? "✓ Loop" : "Loop";
+
+        IsMediaOptionsOn = false;
+    });
+
+    public ICommand ToggleShuffleOption => new RelayCommand(() =>
+    {
+        Shuffle = !Shuffle;
+        MediaOptions.shuffle = Shuffle ? "✓ Shuffle" : "Shuffle";
+
+        IsMediaOptionsOn = false;
+    });
+
+    public MediaOptions MediaOptions
+    {
+        get => _mediaOptions;
+        set => SetField(ref _mediaOptions, value);
+    }
+
     public bool AutoRepeat
     {
         get => _autoRepeat;
         set => SetField(ref _autoRepeat, value);
+    }
+
+    public bool AutoPlay
+    {
+        get => _autoplay;
+        set => SetField(ref _autoplay, value);
+    }
+
+    public bool Loop
+    {
+        get => _loop;
+        set => SetField(ref _loop, value);
+    }
+
+    public bool Shuffle
+    {
+        get => _shuffle;
+        set => SetField(ref _shuffle, value);
     }
 
     public bool IsPlaylistEnd
@@ -61,6 +133,18 @@ public sealed partial class PlayerViewModel : ViewModelBase, IDisposable
     {
         get => _currentFile;
         set => SetField(ref _currentFile, value);
+    }
+
+    public bool IsMouseDragging
+    {
+        get => _isMouseDragging;
+        set => SetField(ref _isMouseDragging, value);
+    }
+
+    public bool IsMediaOptionsOn
+    {
+        get => _isMediaOptionsOn;
+        set => SetField(ref _isMediaOptionsOn, value);
     }
 
     public bool IsPointerOverControls
@@ -233,4 +317,12 @@ public sealed partial class PlayerViewModel : ViewModelBase, IDisposable
 
         _player.Dispose();
     }
+}
+
+public class MediaOptions
+{
+    public string autoPlay { get; set; }
+    public string autoRepeat { get; set; }
+    public string loop { get; set; }
+    public string shuffle { get; set; }
 }

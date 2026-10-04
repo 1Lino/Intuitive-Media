@@ -71,6 +71,31 @@
                                 Height="40"
                                 Click="ProximaMidia" />
 
+                        <DropDownButton Content="⚙">
+                                <DropDownButton.Flyout>
+                                        <MenuFlyout
+                                                Opening="OnMediaOptionsOpened"
+                                                Closing="OnMediaOptionsClosed">
+                                                <MenuItem Header="{Binding MediaOptions.autoPlay}"
+                                                          IsChecked="{Binding AutoPlay}"
+                                                          Command="{Binding ToggleAutoPlayOption}" />
+
+                                                <MenuItem Header="{Binding MediaOptions.autoRepeat}"
+                                                          IsChecked="{Binding AutoRepeat}"
+                                                          Command="{Binding ToggleAutoRepeatOption}" />
+
+                                                <MenuItem Header="{Binding MediaOptions.loop}"
+                                                          IsChecked="{Binding Loop}"
+                                                          Command="{Binding ToggleLoopOption}"/>
+
+                                                <MenuItem Header="{Binding MediaOptions.shuffle}"
+                                                          IsChecked="{Binding Shuffle}"
+                                                          Command="{Binding ToggleShuffleOption}"/>
+                                        </MenuFlyout>
+                                </DropDownButton.Flyout>
+                        </DropDownButton>
+
+
                         <Button Content="Volume"
                                 Width="50"
                                 Height="40"/>

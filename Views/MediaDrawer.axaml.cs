@@ -11,6 +11,7 @@ using Avalonia.Animation;
 using Avalonia.Animation.Easings;
 using Avalonia.Media;
 using Avalonia.Styling;
+using System.Diagnostics;
 
 namespace IntuitiveMedia.Views;
 
@@ -40,6 +41,9 @@ public partial class MediaDrawer : UserControl
             _pressedControl = c;
             _pressedArgs = e;
             _dragStart = e.GetPosition(this);
+
+            Vm.IsMouseDragging = true; // para que os controles não sumam quando o vídeo for arrastado na bandeja.
+            Debug.WriteLine($"Mouse is dragging media: {Vm.IsMouseDragging}");
         }
     }
 
@@ -77,12 +81,6 @@ public partial class MediaDrawer : UserControl
             _draggedItem = null;
         }
 
-        // using var transfer = new DataTransfer();
-        // transfer.Add(DataTransferItem.Create(DragFormat, _draggedItem.Title));
-
-        // await DragDrop.DoDragDropAsync(trigger, transfer, DragDropEffects.Move);
-
-        // _draggedItem = null;
     }
 
     private static void SetClass(Control control, string name, bool enabled)
@@ -103,6 +101,9 @@ public partial class MediaDrawer : UserControl
         _pressedItem = null;
         _pressedArgs = null;
         _pressedControl = null;
+
+        // Vm.IsMouseDragging = false;
+        // Debug.WriteLine($"Mouse is dragging media: {Vm.IsMouseDragging}");
     }
 
     private void Item_DragOver(object? sender, DragEventArgs e)
@@ -137,6 +138,9 @@ public partial class MediaDrawer : UserControl
         if (oldIndex >= 0 && newIndex >= 0)
             // Vm.Playlist.Move(oldIndex, newIndex);
             MoveWithAnimation(oldIndex, newIndex);
+
+        Vm.IsMouseDragging = false;
+        Debug.WriteLine($"Mouse is dragging media: {Vm.IsMouseDragging}");
     }
 
     private void MoveWithAnimation(int oldIndex, int newIndex)

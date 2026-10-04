@@ -19,7 +19,7 @@ public partial class PlayerMediaMenu : UserControl
         if (DataContext is PlayerViewModel vm)
         {
             vm.IsVideoDrawerOn = !vm.IsVideoDrawerOn;
-            Console.WriteLine($"Toggle drawer view. Is drawer on: {vm.IsVideoDrawerOn}");
+            // Console.WriteLine($"Toggle drawer view. Is drawer on: {vm.IsVideoDrawerOn}");
         }
 
     }
@@ -29,7 +29,7 @@ public partial class PlayerMediaMenu : UserControl
         if (DataContext is PlayerViewModel vm)
         {
             vm.IsPointerOverControls = true;
-            Console.WriteLine($"Is mouse over control: {vm.IsPointerOverControls}");
+            // Console.WriteLine($"Is mouse over control: {vm.IsPointerOverControls}");
         }
     }
 
@@ -38,7 +38,7 @@ public partial class PlayerMediaMenu : UserControl
         if (DataContext is PlayerViewModel vm)
         {
             vm.IsPointerOverControls = false;
-            Console.WriteLine($"Is mouse over control: {vm.IsPointerOverControls}");
+            // Console.WriteLine($"Is mouse over control: {vm.IsPointerOverControls}");
         }
     }
 }

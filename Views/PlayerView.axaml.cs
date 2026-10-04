@@ -84,7 +84,12 @@ public partial class PlayerView : UserControl
 
         if (DataContext is PlayerViewModel vm)
         {
-            if (!vm.IsPointerOverControls)
+            // se o ponteiro não estiver sobre os controles, 
+            // nem o pouse estiver arrastando qualquer mídia no drawer, 
+            // nem o menu de opções de mídia estiver aberto.
+            if (!vm.IsPointerOverControls &&
+                !vm.IsMouseDragging &&
+                !vm.IsMediaOptionsOn)
             {
                 vm.AreControlsVisible = false;
 
