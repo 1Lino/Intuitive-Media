@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Windows.Input;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -24,7 +25,7 @@ public sealed partial class PlayerViewModel : ViewModelBase, IDisposable
     // do ViewModelBase, que basicamente faz o serviço de notificar ao binding da UI quando estas propriedades são mudadas.
     // O que fica exposto para a UI é o AreControlsVisible, por exemplo, enquanto que _areControlsVisible é interno. Só não funciona com listas, pois SetField não foi criado levando em conta listas, apenas valores individuais.
     private readonly IMediaPlayerService _player;
-    private bool _autoRepeat = false; // TODO: tem que implementar as mecânicas envolvendo autoRepeat e plalistend.
+    private bool _autoRepeat = false;
     private bool _autoplay = false;
     private bool _loop = false;
     private bool _shuffle = false;
@@ -45,7 +46,7 @@ public sealed partial class PlayerViewModel : ViewModelBase, IDisposable
         autoPlay = "Autoplay",
         autoRepeat = "Repeat",
         loop = "Playlist Loop",
-        shuffle = "Random"
+        shuffle = "Shuffle"
     };
 
     // Adiante tudo os que ficará exposto no para o resto do projeto:
@@ -64,7 +65,9 @@ public sealed partial class PlayerViewModel : ViewModelBase, IDisposable
     public ICommand ToggleAutoRepeatOption => new RelayCommand(() =>
     {
         AutoRepeat = !AutoRepeat;
+        AutoPlay = false; // pois autoplay não pode estar ativo ao mesmo tempo que autorepeat.
         MediaOptions.autoRepeat = AutoRepeat ? "✓ Repeat" : "Repeat";
+        MediaOptions.autoPlay = "Autoplay";
 
         IsMediaOptionsOn = false;
     });
@@ -72,7 +75,11 @@ public sealed partial class PlayerViewModel : ViewModelBase, IDisposable
     public ICommand ToggleAutoPlayOption => new RelayCommand(() =>
     {
         AutoPlay = !AutoPlay;
+        AutoRepeat = false;
+        Shuffle = false;
         MediaOptions.autoPlay = AutoPlay ? "✓ Autoplay" : "Autoplay";
+        MediaOptions.autoRepeat = "Repeat";
+        MediaOptions.shuffle = "Shuffle";
 
         IsMediaOptionsOn = false;
     });
@@ -80,7 +87,9 @@ public sealed partial class PlayerViewModel : ViewModelBase, IDisposable
     public ICommand ToggleLoopOption => new RelayCommand(() =>
     {
         Loop = !Loop;
+        Shuffle = false;
         MediaOptions.loop = Loop ? "✓ Loop" : "Loop";
+        MediaOptions.shuffle = "Shuffle";
 
         IsMediaOptionsOn = false;
     });
@@ -88,7 +97,11 @@ public sealed partial class PlayerViewModel : ViewModelBase, IDisposable
     public ICommand ToggleShuffleOption => new RelayCommand(() =>
     {
         Shuffle = !Shuffle;
+        Loop = false;
+        AutoPlay = false; // Pois "shuffle" já é um tipo de autoplay, só que randomizado. Pelo menos neste app.
         MediaOptions.shuffle = Shuffle ? "✓ Shuffle" : "Shuffle";
+        MediaOptions.loop = "Playlist Loop";
+        MediaOptions.autoPlay = "AutoPlay";
 
         IsMediaOptionsOn = false;
     });
@@ -262,48 +275,97 @@ public sealed partial class PlayerViewModel : ViewModelBase, IDisposable
 
     private void OnErrorOccurred(object? sender, string message) => LastError = message;
 
+    // Este método verifica se o player está ou não no final da playlist, e executa comandos de acordo com estes casos.
     private void ReachedEndOfPlay()
     {
-        if (IsPlaylistEnd)
+        int currentVideoIndex = Playlist.IndexOf(CurrentFile);
+        int playlistLastIndex = Playlist.IndexOf(Playlist.Last());
+
+        // Analisa se o índice para o próximo vídeo é menor ou igual ao índice do último vídeo da playlist
+        // se sim, segue com a incrementação. Se não, o índice do próximo vídeo não atualiza.
+        int nextVideoIndex = currentVideoIndex + 1 <= playlistLastIndex ? currentVideoIndex + 1 : currentVideoIndex;
+
+        VideoItem nextVideo = Playlist[nextVideoIndex];
+
+        Debug.WriteLine($"Current Media Index: {nextVideoIndex}\nPlaylist last Index: {playlistLastIndex}");
+        // checagem básica de fim de playlist:
+        if (currentVideoIndex == playlistLastIndex)
         {
-            if (AutoRepeat)
-                Play(CurrentFile);
-            else
-                Stop();
+            IsPlaylistEnd = true;
         }
         else
         {
+            IsPlaylistEnd = false;
+        }
+
+        // TODO: ver possível refatoração desses blocos de if... else, para maior clareza.
+        if (IsPlaylistEnd)
+        {
             if (AutoRepeat)
             {
+                Play(CurrentFile); // dá replay no vídeo final, caso autorepeat esteja ativado
+            }
+            else if (Loop)
+            {
+                VideoItem FirstVideo = Playlist[0];
+                Play(FirstVideo); // recomeça a playlist do zero
+            }
+            else if (Shuffle)
+            {
+                ShufflePlaylist(Playlist);
+                CurrentFile = Playlist[0];
                 Play(CurrentFile);
             }
             else
             {
-                int currentVideoIndex = Playlist.IndexOf(CurrentFile);
-                int playlistLastIndex = Playlist.IndexOf(Playlist.Last());
-
-                // Console.WriteLine($"\nVideo que acabou de tocar: {CurrentFile.Title}\nVideo Index: {currentVideoIndex}");
-
-                // Analisa se o índice para o próximo vídeo é menor ou igual ao índice do último vídeo da playlist
-                // se sim, segue com a incrementação. Se não, o índice do próximo vídeo não atualiza.
-                int nextVideoIndex = currentVideoIndex + 1 <= playlistLastIndex ? currentVideoIndex + 1 : currentVideoIndex;
-
-                VideoItem nextVideo = Playlist[nextVideoIndex];
-
+                Play(CurrentFile);
+                Stop();
+            }
+        }
+        else
+        {
+            if (AutoPlay)
+            {
                 // Console.WriteLine($"Video pra tocar agora: {nextVideo.Title}\nVideo Index: {nextVideoIndex}");
 
                 Play(nextVideo);
 
                 // isto aqui é importante, do contrário "CurrentFile" será sempre o vídeo de índice 0.
                 CurrentFile = nextVideo;
-
-                // checagem básica de fim de playlist:
-                if (nextVideoIndex == playlistLastIndex)
-                {
-                    IsPlaylistEnd = true;
-                }
+            }
+            else if (AutoRepeat)
+            {
+                Play(CurrentFile);
+            }
+            else if (Shuffle)
+            {
+                ShufflePlaylist(Playlist);
+                CurrentFile = Playlist[0];
+                Play(CurrentFile);
+            }
+            else
+            {
+                Play(CurrentFile);
+                Stop();
             }
 
+        }
+
+    }
+
+    // Algoritmo de permutação Fisher-Yates Shuffle (embaralhar), complexidade O(n), pra misturar os elementos da playlist. 
+    // Este algoritmo é mais eficiente, neste caso, do que um simples Random (que normalmente possui algum viés, dependendo de como é implementado).
+    public static void ShufflePlaylist<T>(ObservableCollection<T> list)
+    {
+        Random rnd = new Random();
+        int n = list.Count;
+        while (n > 1)
+        {
+            n--;
+            int k = rnd.Next(n + 1);
+            T temp = list[k];
+            list[k] = list[n];
+            list[n] = temp;
         }
     }
 
