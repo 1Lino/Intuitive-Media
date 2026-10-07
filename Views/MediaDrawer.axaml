@@ -7,7 +7,7 @@
 
       <UserControl.Styles>
 
-            <!-- Painel de estilos -->
+            <!-- Painel de estilos e suas classes -->
             <Style Selector="Border.item">
                   <Setter Property="Background" Value="Transparent" />
                   <Setter Property="BorderThickness" Value="2" />
@@ -24,6 +24,11 @@
                   <Setter Property="Opacity" Value="0.4" />
             </Style>
 
+            <Style Selector="Border.item.current">
+                  <Setter Property="BorderBrush" Value="#FFFFA640" />
+                  <Setter Property="Background" Value="#83332311" />
+            </Style>
+
             <Style Selector="Border.item.dragover">
                   <Setter Property="BorderBrush" Value="#FF7B00" />
                   <Setter Property="Background" Value="#472600" />
@@ -31,42 +36,48 @@
       </UserControl.Styles>
 
       <!-- Painel principal -->
-      <DockPanel Name="VideoDrawer" Width="400" Height="150"
-                 Background="LightGray" Margin="0 50">
-            <ScrollViewer HorizontalScrollBarVisibility="Auto"
-                          VerticalScrollBarVisibility="Disabled">
+      <Border CornerRadius="10"
+              Background="#7CFF2600"
+              Width="400" Height="150"
+              Margin="0 50">
+            <DockPanel Name="VideoDrawer">
+                  <ScrollViewer HorizontalScrollBarVisibility="Auto"
+                                VerticalScrollBarVisibility="Disabled">
 
-                  <!-- Binding Playlist faz com que os itens sejam adicionados dinamicamente conforme essa lista -->
-                  <ItemsControl x:Name="VideoList" ItemsSource="{Binding Playlist}">
-                        <ItemsControl.ItemsPanel>
-                              <ItemsPanelTemplate>
-                                    <StackPanel Orientation="Horizontal" />
-                              </ItemsPanelTemplate>
-                        </ItemsControl.ItemsPanel>
+                        <!-- Binding Playlist faz com que os itens sejam adicionados dinamicamente conforme essa lista -->
+                        <ItemsControl x:Name="VideoList" ItemsSource="{Binding Playlist}">
+                              <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                          <StackPanel Orientation="Horizontal" />
+                                    </ItemsPanelTemplate>
+                              </ItemsControl.ItemsPanel>
 
-                        <ItemsControl.ItemTemplate>
-                              <DataTemplate x:DataType="m:VideoItem">
-                                    <Border Classes="item" Margin="5" Padding="4"
-                                            Cursor="Hand"
-                                            DragDrop.AllowDrop="True"
-                                            PointerPressed="Item_PointerPressed"
-                                            PointerMoved="Item_PointerMoved"
-                                            PointerReleased="Item_PointerReleased"
-                                            DragDrop.DragOver="Item_DragOver"
-                                            DragDrop.DragLeave="Item_DragLeave"
-                                            DragDrop.Drop="Item_Drop">
-                                          <StackPanel Spacing="4" VerticalAlignment="Center">
-                                                <TextBlock Text="{Binding Title}" HorizontalAlignment="Center" />
-                                                <Border Width="100" Height="60" Background="Gray" CornerRadius="4"
-                                                        ClipToBounds="True">
-                                                      <Image Source="{Binding Thumbnail}" Stretch="UniformToFill" />
-                                                </Border>
-                                          </StackPanel>
-                                    </Border>
-                              </DataTemplate>
-                        </ItemsControl.ItemTemplate>
+                              <ItemsControl.ItemTemplate>
+                                    <DataTemplate x:DataType="m:VideoItem">
+                                          <!-- Usa-se aqui um binding em Classes.current, que se refere ao estilo "current". Tal biding irá responder às atualizações da propriedade IsCurrent do vídeo atual sendo executado, de modo que o vídeo fique visualmente destacado na playlist pela classe de estilo "current" -->
+                                          <Border Classes="item" Margin="5" Padding="4"
+                                                  Classes.current="{Binding IsCurrent}"
+                                                  Cursor="Hand"
+                                                  DragDrop.AllowDrop="True"
+                                                  PointerPressed="Item_PointerPressed"
+                                                  PointerMoved="Item_PointerMoved"
+                                                  PointerReleased="Item_PointerReleased"
+                                                  DragDrop.DragOver="Item_DragOver"
+                                                  DragDrop.DragLeave="Item_DragLeave"
+                                                  DragDrop.Drop="Item_Drop">
+                                                <StackPanel Spacing="4" VerticalAlignment="Center">
+                                                      <TextBlock Text="{Binding Title}" HorizontalAlignment="Center" />
+                                                      <Border Width="100" Height="60" Background="Gray" CornerRadius="4"
+                                                              ClipToBounds="True">
+                                                            <Image Source="{Binding Thumbnail}" Stretch="UniformToFill" />
+                                                      </Border>
+                                                </StackPanel>
+                                          </Border>
+                                    </DataTemplate>
+                              </ItemsControl.ItemTemplate>
 
-                  </ItemsControl>
-            </ScrollViewer>
-      </DockPanel>
+                        </ItemsControl>
+                  </ScrollViewer>
+            </DockPanel>
+      </Border>
 </UserControl>

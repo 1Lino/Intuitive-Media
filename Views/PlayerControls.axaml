@@ -6,105 +6,29 @@
              x:Class="IntuitiveMedia.Views.PlayerControls"
              d:DesignWidth="600" d:DesignHeight="450"
              >
-        <Grid
-                VerticalAlignment="Bottom"
-                HorizontalAlignment="Center"
-                Margin="0,0,0,25"
-                PointerEntered="OnMouseOver"
-                PointerExited="OnMouseExit"
-                ShowGridLines="True"
-                RowSpacing="5"
-                Width="500"
+
+        <Border CornerRadius="10"
+                Background="#7CFF2600"
+                Width="550"
                 Height="100"
-                Background="#7CFF2600">
+                VerticalAlignment="Bottom"
+                HorizontalAlignment="Center">
+                <Grid
 
-                <Slider Name="TrackSeeker"
-                        Minimum="0"
-                        Maximum="{Binding DurationSeconds}"
-                        Value="{Binding PositionSeconds, Mode=TwoWay}"
-                        Width="450"
-                        Grid.Row="1"
-                        Background="#5A2F12"
-                        Foreground="#FF8800">
-                        <Slider.Resources>
-                                <!--Thumb do track-->
-                                <SolidColorBrush x:Key="SliderThumbBackground">#FFFF7C01</SolidColorBrush>
-                                <SolidColorBrush x:Key="SliderThumbBackgroundPointerOver">#FFCA6200</SolidColorBrush>
-                                <SolidColorBrush x:Key="SliderThumbBackgroundPressed">#FFCA6200</SolidColorBrush>
+                        Margin="0,0,0,25"
+                        PointerEntered="OnMouseOver"
+                        PointerExited="OnMouseExit"
+                        ShowGridLines="True"
+                        RowSpacing="5"
+                        Width="550"
+                        Height="100">
 
-                                <!--Track da direita-->
-                                <SolidColorBrush x:Key="SliderTrackFill">#FF8800</SolidColorBrush>
-                                <SolidColorBrush x:Key="SliderTrackFillPointerOver">#5A2F12</SolidColorBrush>
-                                <SolidColorBrush x:Key="SliderTrackFillPressed">#5A2F12</SolidColorBrush>
-
-                                <!--Track da esquerda-->
-                                <SolidColorBrush x:Key="SliderTrackValueFill">#FF8800</SolidColorBrush>
-                                <SolidColorBrush x:Key="SliderTrackValueFillPointerOver">#FF8800</SolidColorBrush>
-                                <SolidColorBrush x:Key="SliderTrackValueFillPressed">#FF8800</SolidColorBrush>
-                        </Slider.Resources>
-                </Slider>
-
-                <StackPanel Orientation="Horizontal"
-                            Spacing="12"
-                            Grid.Row="2"
-                            VerticalAlignment="Bottom"
-                            HorizontalAlignment="Center"
-                            Margin="10">
-
-                        <Button Content="Load"
-                                Width="50"
-                                Height="40"
-                                Click="CarregarMidia"></Button>
-
-                        <Button Content="Prev"
-                                Width="50"
-                                Height="40"
-                                Click="MidiaAnterior" />
-
-                        <Button Content="Play"
-                                Width="60"
-                                Height="45"
-                                Click="PausarMidia"/>
-
-                        <Button Content="Next"
-                                Width="50"
-                                Height="40"
-                                Click="ProximaMidia" />
-
-                        <DropDownButton Content="⚙">
-                                <DropDownButton.Flyout>
-                                        <MenuFlyout
-                                                Opening="OnMediaOptionsOpened"
-                                                Closing="OnMediaOptionsClosed">
-                                                <MenuItem Header="{Binding MediaOptions.autoPlay}"
-                                                          IsChecked="{Binding AutoPlay}"
-                                                          Command="{Binding ToggleAutoPlayOption}" />
-
-                                                <MenuItem Header="{Binding MediaOptions.autoRepeat}"
-                                                          IsChecked="{Binding AutoRepeat}"
-                                                          Command="{Binding ToggleAutoRepeatOption}" />
-
-                                                <MenuItem Header="{Binding MediaOptions.loop}"
-                                                          IsChecked="{Binding Loop}"
-                                                          Command="{Binding ToggleLoopOption}"/>
-
-                                                <MenuItem Header="{Binding MediaOptions.shuffle}"
-                                                          IsChecked="{Binding Shuffle}"
-                                                          Command="{Binding ToggleShuffleOption}"/>
-                                        </MenuFlyout>
-                                </DropDownButton.Flyout>
-                        </DropDownButton>
-
-
-                        <Button Content="Volume"
-                                Width="50"
-                                Height="40"/>
-
-                        <Slider Name="VolumeControl"
+                        <Slider Name="TrackSeeker"
                                 Minimum="0"
-                                Maximum="100"
-                                Value="{Binding Volume, Mode=TwoWay}"
-                                Width="100"
+                                Maximum="{Binding DurationSeconds}"
+                                Value="{Binding PositionSeconds, Mode=TwoWay}"
+                                Width="450"
+                                Grid.Row="1"
                                 Background="#5A2F12"
                                 Foreground="#FF8800">
                                 <Slider.Resources>
@@ -125,7 +49,89 @@
                                 </Slider.Resources>
                         </Slider>
 
-                </StackPanel>
-        </Grid>
+                        <StackPanel Orientation="Horizontal"
+                                    Spacing="12"
+                                    Grid.Row="2"
+                                    VerticalAlignment="Bottom"
+                                    HorizontalAlignment="Center"
+                                    Margin="10">
+
+                                <Button Content="Load"
+                                        Width="50"
+                                        Height="40"
+                                        Click="CarregarMidia"></Button>
+
+                                <Button Content="Prev"
+                                        Width="50"
+                                        Height="40"
+                                        Click="MidiaAnterior" />
+
+                                <Button Content="Play"
+                                        Width="60"
+                                        Height="45"
+                                        Click="PausarMidia"/>
+
+                                <Button Content="Next"
+                                        Width="50"
+                                        Height="40"
+                                        Click="ProximaMidia" />
+
+                                <DropDownButton Content="⚙">
+                                        <DropDownButton.Flyout>
+                                                <MenuFlyout
+                                                        Opening="OnMediaOptionsOpened"
+                                                        Closing="OnMediaOptionsClosed">
+                                                        <MenuItem Header="{Binding MediaOptions.autoPlay}"
+                                                                  IsChecked="{Binding AutoPlay}"
+                                                                  Command="{Binding ToggleAutoPlayOption}" />
+
+                                                        <MenuItem Header="{Binding MediaOptions.autoRepeat}"
+                                                                  IsChecked="{Binding AutoRepeat}"
+                                                                  Command="{Binding ToggleAutoRepeatOption}" />
+
+                                                        <MenuItem Header="{Binding MediaOptions.loop}"
+                                                                  IsChecked="{Binding Loop}"
+                                                                  Command="{Binding ToggleLoopOption}"/>
+
+                                                        <MenuItem Header="{Binding MediaOptions.shuffle}"
+                                                                  IsChecked="{Binding Shuffle}"
+                                                                  Command="{Binding ToggleShuffleOption}"/>
+                                                </MenuFlyout>
+                                        </DropDownButton.Flyout>
+                                </DropDownButton>
+
+
+                                <Button Content="Volume"
+                                        Width="50"
+                                        Height="40"/>
+
+                                <Slider Name="VolumeControl"
+                                        Minimum="0"
+                                        Maximum="100"
+                                        Value="{Binding Volume, Mode=TwoWay}"
+                                        Width="100"
+                                        Background="#5A2F12"
+                                        Foreground="#FF8800">
+                                        <Slider.Resources>
+                                                <!--Thumb do track-->
+                                                <SolidColorBrush x:Key="SliderThumbBackground">#FFFF7C01</SolidColorBrush>
+                                                <SolidColorBrush x:Key="SliderThumbBackgroundPointerOver">#FFCA6200</SolidColorBrush>
+                                                <SolidColorBrush x:Key="SliderThumbBackgroundPressed">#FFCA6200</SolidColorBrush>
+
+                                                <!--Track da direita-->
+                                                <SolidColorBrush x:Key="SliderTrackFill">#FF8800</SolidColorBrush>
+                                                <SolidColorBrush x:Key="SliderTrackFillPointerOver">#5A2F12</SolidColorBrush>
+                                                <SolidColorBrush x:Key="SliderTrackFillPressed">#5A2F12</SolidColorBrush>
+
+                                                <!--Track da esquerda-->
+                                                <SolidColorBrush x:Key="SliderTrackValueFill">#FF8800</SolidColorBrush>
+                                                <SolidColorBrush x:Key="SliderTrackValueFillPointerOver">#FF8800</SolidColorBrush>
+                                                <SolidColorBrush x:Key="SliderTrackValueFillPressed">#FF8800</SolidColorBrush>
+                                        </Slider.Resources>
+                                </Slider>
+
+                        </StackPanel>
+                </Grid>
+        </Border>
         <!--END-->
 </UserControl>

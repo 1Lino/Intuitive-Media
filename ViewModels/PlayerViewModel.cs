@@ -26,7 +26,7 @@ public sealed partial class PlayerViewModel : ViewModelBase, IDisposable
     // O que fica exposto para a UI é o AreControlsVisible, por exemplo, enquanto que _areControlsVisible é interno. Só não funciona com listas, pois SetField não foi criado levando em conta listas, apenas valores individuais.
     private readonly IMediaPlayerService _player;
     private bool _autoRepeat = false;
-    private bool _autoplay = false;
+    private bool _autoplay = true;
     private bool _loop = false;
     private bool _shuffle = false;
     private bool _isPlaylistEnd = false;
@@ -43,7 +43,7 @@ public sealed partial class PlayerViewModel : ViewModelBase, IDisposable
     private bool _isVideoDrawerOn;
     private MediaOptions _mediaOptions = new MediaOptions
     {
-        autoPlay = "Autoplay",
+        autoPlay = "✓ Autoplay",
         autoRepeat = "Repeat",
         loop = "Playlist Loop",
         shuffle = "Shuffle"
@@ -88,7 +88,7 @@ public sealed partial class PlayerViewModel : ViewModelBase, IDisposable
     {
         Loop = !Loop;
         Shuffle = false;
-        MediaOptions.loop = Loop ? "✓ Loop" : "Loop";
+        MediaOptions.loop = Loop ? "✓ Playlist Loop" : " Playlist Loop";
         MediaOptions.shuffle = "Shuffle";
 
         IsMediaOptionsOn = false;
@@ -145,7 +145,24 @@ public sealed partial class PlayerViewModel : ViewModelBase, IDisposable
     public VideoItem CurrentFile
     {
         get => _currentFile;
-        set => SetField(ref _currentFile, value);
+        set
+        {
+            var previousFile = _currentFile;
+            if (ReferenceEquals(previousFile, value))
+                return;
+
+            if (!SetField<VideoItem>(ref _currentFile, value))
+                return;
+
+            // Atualiza a propriedade IsCurrent do vídeo anterior para "false"
+            if (previousFile is not null)
+                previousFile.IsCurrent = false;
+
+            // e atualiza a mesma propriedade para o vídeo atual para "true"
+            // de modo que tal propriedade possa ser lida pela interface, para
+            // então aplicar comportamentos/estilos de acordo com estes valores.
+            value.IsCurrent = true;
+        }
     }
 
     public bool IsMouseDragging
@@ -307,8 +324,8 @@ public sealed partial class PlayerViewModel : ViewModelBase, IDisposable
             }
             else if (Loop)
             {
-                VideoItem FirstVideo = Playlist[0];
-                Play(FirstVideo); // recomeça a playlist do zero
+                CurrentFile = Playlist[0];
+                Play(CurrentFile); // recomeça a playlist do zero
             }
             else if (Shuffle)
             {

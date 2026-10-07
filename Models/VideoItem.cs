@@ -9,7 +9,21 @@ public class VideoItem : INotifyPropertyChanged
 {
     public string Title { get; set; } = "";
     public string Path { get; set; } = "";
+    private bool _isCurrent;
     private Bitmap? _thumbnail;   // isso pode ser null enquanto não gerar a miniatura do vídeo
+
+    public bool IsCurrent
+    {
+        get => _isCurrent;
+        internal set
+        {
+            if (_isCurrent == value)
+                return;
+
+            _isCurrent = value;
+            OnPropertyChanged();
+        }
+    }
 
     public Bitmap? Thumbnail
     {

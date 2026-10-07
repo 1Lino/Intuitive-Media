@@ -98,12 +98,24 @@ public partial class MediaDrawer : UserControl
 
     private void Item_PointerReleased(object? sender, PointerReleasedEventArgs e)
     {
+        var itemToPlay = _pressedItem;
+        var isClick = itemToPlay is not null &&
+                      sender is Control control &&
+                      ReferenceEquals(control, _pressedControl) &&
+                      ReferenceEquals(control.DataContext, itemToPlay) &&
+                      e.InitialPressMouseButton == MouseButton.Left &&
+                      _draggedItem is null;
+
         _pressedItem = null;
         _pressedArgs = null;
         _pressedControl = null;
 
-        // Vm.IsMouseDragging = false;
-        // Debug.WriteLine($"Mouse is dragging media: {Vm.IsMouseDragging}");
+        if (isClick && itemToPlay is not null && Vm is { } vm)
+        {
+            vm.CurrentFile = itemToPlay;
+            vm.Play(itemToPlay);
+            vm.IsMouseDragging = false;
+        }
     }
 
     private void Item_DragOver(object? sender, DragEventArgs e)

@@ -96,11 +96,8 @@ public partial class PlayerControls : UserControl
         }
     }
 
-    // NOTA: observar se existe algum problema de race condition no uso destes métodos pelo evento de clique dos botões, ou qualquer outra anormalidade.
-    // TODO 1: uma vez chegado ao fim da playlist, a variável IsPlaylistEnd fica true, é necessário, porém, que fique false quando este já não for o caso. 
-    // TODO 2: Também é necessário observar o que acontece se o usuário mudar a ordem dos vídeos na playlist; 
-    // TODO 3: também é necessário criar algum feedback visual que indique qual vídeo está sendo tocado atualmente na playlist.
-    // TODO 4: quando o usuário clicar em qualquer vídeo da playlist, este deve ser então reproduzido.
+    // TODO 1: observar se existe algum problema de race condition no uso destes métodos pelo evento de clique dos botões, ou qualquer outra anormalidade. 
+    // TODO 2: É necessário observar o que acontece se o usuário mudar a ordem dos vídeos na playlist; 
     private void ProximaMidia(object? sender, RoutedEventArgs e)
     {
         if (DataContext is PlayerViewModel vm)
