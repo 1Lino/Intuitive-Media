@@ -19,7 +19,19 @@ namespace IntuitiveMedia.ViewModels;
 public sealed partial class PlayerViewModel : ViewModelBase, IDisposable
 {
     // ObservableCollection torna viável o sistema de reposicionamento de vídeos na playlist por meio de draging
-    public ObservableCollection<VideoItem> Playlist { get; } = new();
+    public ObservableCollection<VideoItem> Playlist { get; } = new(); // conjunto de vídeos
+
+    public ObservableCollection<PlaylistItem> Playlists { get; } = new ObservableCollection<PlaylistItem>
+    {
+        new PlaylistItem { Title = "Playlist 1"},
+        new PlaylistItem { Title = "Playlist 2"},
+        new PlaylistItem { Title = "Playlist 3"},
+        new PlaylistItem { Title = "Playlist 4"},
+        new PlaylistItem { Title = "Playlist 5"},
+        new PlaylistItem { Title = "Playlist 6"},
+        new PlaylistItem { Title = "Playlist 7"},
+        new PlaylistItem { Title = "Playlist 8"},
+    }; // conjunto de playlists
 
     // Ao invés de [ObservableProperty], deve-se usar essa estrutura aqui, que segue INotifyPropertyChanged
     // do ViewModelBase, que basicamente faz o serviço de notificar ao binding da UI quando estas propriedades são mudadas.
@@ -31,6 +43,7 @@ public sealed partial class PlayerViewModel : ViewModelBase, IDisposable
     private bool _shuffle = false;
     private bool _isPlaylistEnd = false;
     private VideoItem _currentFile;
+    private PlaylistItem _currentPlaylist;
     private PlaybackState _state;
     private TimeSpan _position;
     private TimeSpan _duration;
@@ -41,6 +54,7 @@ public sealed partial class PlayerViewModel : ViewModelBase, IDisposable
     private bool _isMediaOptionsOn;
     private bool _areControlsVisible;
     private bool _isVideoDrawerOn;
+    private bool _isPlaylistDrawerOn;
     private MediaOptions _mediaOptions = new MediaOptions
     {
         autoPlay = "✓ Autoplay",
@@ -165,6 +179,27 @@ public sealed partial class PlayerViewModel : ViewModelBase, IDisposable
         }
     }
 
+    public PlaylistItem CurrentPlaylist
+    {
+        get => _currentPlaylist;
+        set
+        {
+            {
+                var previousPlaylist = _currentPlaylist;
+                if (ReferenceEquals(previousPlaylist, value))
+                    return;
+
+                if (!SetField<PlaylistItem>(ref _currentPlaylist, value))
+                    return;
+
+                if (previousPlaylist is not null)
+                    previousPlaylist.IsCurrent = false;
+
+                value.IsCurrent = true;
+            }
+        }
+    }
+
     public bool IsMouseDragging
     {
         get => _isMouseDragging;
@@ -193,6 +228,12 @@ public sealed partial class PlayerViewModel : ViewModelBase, IDisposable
     {
         get => _isVideoDrawerOn;
         set => SetField(ref _isVideoDrawerOn, value);
+    }
+
+    public bool IsPlaylistDrawerOn
+    {
+        get => _isPlaylistDrawerOn;
+        set => SetField(ref _isPlaylistDrawerOn, value);
     }
 
     public PlaybackState State

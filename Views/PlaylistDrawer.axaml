@@ -1,0 +1,110 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:IntuitiveMedia.ViewModels"
+             xmlns:m="using:IntuitiveMedia.Models"
+             x:DataType="vm:PlayerViewModel"
+             x:Class="IntuitiveMedia.Views.PlaylistDrawer">
+
+    <UserControl.Styles>
+
+        <!-- Painel de estilos e suas classes -->
+        <Style Selector="Border.item">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="2" />
+            <Setter Property="BorderBrush" Value="Transparent" />
+            <Setter Property="CornerRadius" Value="6" />
+            <Setter Property="Transitions">
+                <Transitions>
+                    <DoubleTransition Property="Opacity" Duration="0:0:0.15" />
+                </Transitions>
+            </Setter>
+        </Style>
+
+        <Style Selector="Border.item.dragging">
+            <Setter Property="Opacity" Value="0.4" />
+        </Style>
+
+        <Style Selector="Border.item.current">
+            <Setter Property="BorderBrush" Value="#FFFFA640" />
+            <Setter Property="Background" Value="#83332311" />
+        </Style>
+
+        <Style Selector="Border.item.dragover">
+            <Setter Property="BorderBrush" Value="#FF7B00" />
+            <Setter Property="Background" Value="#472600" />
+        </Style>
+    </UserControl.Styles>
+
+
+    <!-- Painel principal -->
+    <!-- TODO: deve haver uma lógica que faz os demais paineis de controles do player sumirem quando este aqui estiver ativo, e vice versa. Também devo fazer com que as dimensões destes painéis sejam dinâmicos de acordo com o estado da tela (se fullscreen está on ou off) -->
+    <Border CornerRadius="10"
+            Background="#7CFF2600"
+            Width="180" Height="480"
+            Margin="0 50">
+
+        <DockPanel Name="PlaylistsDrawer" LastChildFill="False">
+
+            <ScrollViewer HorizontalScrollBarVisibility="Disabled"
+                          VerticalScrollBarVisibility="Auto"
+                          Height="400"
+                          VerticalAlignment="Top"
+                          DockPanel.Dock="Top">
+
+                <!-- Binding Playlist faz com que os itens sejam adicionados dinamicamente conforme essa lista -->
+                <ItemsControl x:Name="PlaylistList" ItemsSource="{Binding Playlists}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <StackPanel Orientation="Vertical" />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="m:PlaylistItem">
+                            <!-- Margin/Padding orientation: Left, Top, Right, Bottom -->
+                            <Border Classes="item" Margin="10 10 20 10 " Padding="4"
+                                    Classes.current="{Binding IsCurrent}"
+                                    Cursor="Hand"
+                                    DragDrop.AllowDrop="True"
+                                    PointerPressed="Item_PointerPressed"
+                                    PointerMoved="Item_PointerMoved"
+                                    PointerReleased="Item_PointerReleased"
+                                    DragDrop.DragOver="Item_DragOver"
+                                    DragDrop.DragLeave="Item_DragLeave"
+                                    DragDrop.Drop="Item_Drop">
+                                <StackPanel Spacing="4" VerticalAlignment="Center">
+                                    <TextBlock Text="{Binding Title}" HorizontalAlignment="Center" />
+                                    <Border Width="100" Height="60" Background="Gray" CornerRadius="4"
+                                            ClipToBounds="True">
+                                        <Image Source="{Binding Thumbnail}" Stretch="UniformToFill" />
+                                    </Border>
+                                </StackPanel>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+
+                </ItemsControl>
+            </ScrollViewer>
+
+            <!-- Painel de add e delete-->
+            <Border DockPanel.Dock="Bottom"
+                    Background="#BD5712"
+                    Width="140"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Bottom"
+                    Margin="10"
+                    CornerRadius="5">
+                <StackPanel Orientation="Horizontal"
+                            Spacing="10"
+                            HorizontalAlignment="Center"
+                            Margin="10">
+
+                    <!-- Quando o usuário clicar em "Add" deverá aparecer uma tela de criação de playlist -->
+                    <Button Content="Add"></Button>
+                    <Button Content="Delete"></Button>
+                </StackPanel>
+            </Border>
+
+        </DockPanel>
+    </Border>
+</UserControl>

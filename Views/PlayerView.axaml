@@ -15,6 +15,7 @@
                    VerticalAlignment="Stretch">
         <!-- Esse grid funciona como um overlay invisível por cima do VideoView, permitindo captura de movimento do mouse -->
         <Grid Name="ControlsOverlay" PointerMoved="PointerMovedIntoOverlay" Background="Transparent" DoubleTapped="OnDoubleTapped">
+            <local:PlaylistMenu ZIndex="1" IsVisible="{Binding AreControlsVisible}"/>
             <local:PlayerMediaMenu ZIndex="1" IsVisible="{Binding AreControlsVisible}"/>
             <local:PlayerControls ZIndex="1" IsVisible="{Binding AreControlsVisible}"/>
         </Grid>
