@@ -1,0 +1,38 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="IntuitiveMedia.Views.Dialog"
+        Title="Item"
+        Width="380"
+        SizeToContent="Height"
+        WindowStartupLocation="CenterOwner"
+        CanResize="False">
+
+    <StackPanel Margin="20" Spacing="15">
+
+        <TextBlock x:Name="MensagemText"
+                   TextWrapping="Wrap" />
+
+        <TextBox x:Name="NomeTextBox"
+                 Watermark="Digite o nome do item"
+                 IsVisible="False" />
+
+        <StackPanel Orientation="Horizontal"
+                    HorizontalAlignment="Right"
+                    Spacing="10">
+
+            <Button x:Name="ConfirmarButton"
+                    Content="OK"
+                    MinWidth="80"
+                    IsDefault="True"
+                    Click="Confirmar_Click" />
+
+            <Button x:Name="CancelarButton"
+                    Content="Cancelar"
+                    MinWidth="80"
+                    IsCancel="True"
+                    Click="Cancelar_Click" />
+
+        </StackPanel>
+
+    </StackPanel>
+</Window>

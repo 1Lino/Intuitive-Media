@@ -12,6 +12,7 @@ using Avalonia.Media;
 using Avalonia.Animation.Easings;
 using Avalonia.Styling;
 using System.Collections.Generic;
+using Avalonia.Interactivity;
 
 namespace IntuitiveMedia.Views;
 
@@ -214,5 +215,44 @@ public partial class PlaylistDrawer : UserControl
     {
         await animation.RunAsync(target);
         target.RenderTransform = null;   // pra limpar o deslocamento inicial quando terminar a animação
+    }
+
+    public void AddPlaylist(object? sender, RoutedEventArgs e)
+    {
+        AddPlaylistAsync();
+    }
+
+    public void DeletePlaylist(object? sender, RoutedEventArgs e)
+    {
+        DeletePlaylistAsync();
+    }
+    private async Task AddPlaylistAsync()
+    {
+        var dialog = new Dialog("Digite o nome do novo item:", modoAdicionar: true);
+
+        var window = TopLevel.GetTopLevel(this) as Window;
+
+        bool? resultado = await dialog.ShowDialog<bool?>(window);
+
+        if (resultado == true)
+        {
+            // TODO: aqui deve ser chamado o método de adicionar playlist. Tal método é algo que deve vir do viewModel.
+            Debug.WriteLine("Added a new playlist!");
+        }
+    }
+
+    private async Task DeletePlaylistAsync()
+    {
+        var dialog = new Dialog("Deseja realmente excluir este item?", modoAdicionar: false);
+
+        var window = TopLevel.GetTopLevel(this) as Window;
+
+        bool? resultado = await dialog.ShowDialog<bool?>(window);
+
+        if (resultado == true)
+        {
+            // TODO: aqui deve ser chamado o método de deletar playlist. Tal método é algo que deve vir do viewModel.
+            Debug.WriteLine("Deleted a playlist!");
+        }
     }
 }

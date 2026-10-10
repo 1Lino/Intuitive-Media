@@ -100,8 +100,8 @@
                             Margin="10">
 
                     <!-- Quando o usuário clicar em "Add" deverá aparecer uma tela de criação de playlist -->
-                    <Button Content="Add"></Button>
-                    <Button Content="Delete"></Button>
+                    <Button Content="Add" Click="AddPlaylist"></Button>
+                    <Button Content="Delete" Click="DeletePlaylist"></Button>
                 </StackPanel>
             </Border>
 
