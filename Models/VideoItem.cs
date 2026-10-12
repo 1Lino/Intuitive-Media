@@ -2,7 +2,6 @@ namespace IntuitiveMedia.Models;
 
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
-using System.Threading.Tasks;
 using Avalonia.Media.Imaging;
 
 public class VideoItem : INotifyPropertyChanged

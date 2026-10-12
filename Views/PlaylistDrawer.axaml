@@ -40,18 +40,18 @@
     <!-- TODO: deve haver uma lógica que faz os demais paineis de controles do player sumirem quando este aqui estiver ativo, e vice versa. Também devo fazer com que as dimensões destes painéis sejam dinâmicos de acordo com o estado da tela (se fullscreen está on ou off) -->
     <Border CornerRadius="10"
             Background="#7CFF2600"
-            Width="180" Height="480"
+            Width="180" Height="200" MaxHeight="480"
             Margin="0 50">
 
         <DockPanel Name="PlaylistsDrawer" LastChildFill="False">
 
             <ScrollViewer HorizontalScrollBarVisibility="Disabled"
                           VerticalScrollBarVisibility="Auto"
-                          Height="400"
+                          Height="120"
+                          MaxHeight="400"
                           VerticalAlignment="Top"
                           DockPanel.Dock="Top">
 
-                <!-- Binding Playlist faz com que os itens sejam adicionados dinamicamente conforme essa lista -->
                 <ItemsControl x:Name="PlaylistList" ItemsSource="{Binding Playlists}">
                     <ItemsControl.ItemsPanel>
                         <ItemsPanelTemplate>
@@ -89,7 +89,7 @@
             <!-- Painel de add e delete-->
             <Border DockPanel.Dock="Bottom"
                     Background="#BD5712"
-                    Width="140"
+                    Width="160"
                     HorizontalAlignment="Center"
                     VerticalAlignment="Bottom"
                     Margin="10"
@@ -99,7 +99,7 @@
                             HorizontalAlignment="Center"
                             Margin="10">
 
-                    <!-- Quando o usuário clicar em "Add" deverá aparecer uma tela de criação de playlist -->
+                    <Button Content="Load"></Button>
                     <Button Content="Add" Click="AddPlaylist"></Button>
                     <Button Content="Delete" Click="DeletePlaylist"></Button>
                 </StackPanel>

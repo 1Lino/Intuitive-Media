@@ -217,18 +217,33 @@ public partial class PlaylistDrawer : UserControl
         target.RenderTransform = null;   // pra limpar o deslocamento inicial quando terminar a animação
     }
 
+    public void FillNewPlaylist()
+    {
+        List<string> mediaPaths = new List<string>();
+
+        foreach (VideoItem item in Vm.Playlist)
+        {
+            mediaPaths.Add(item.Path);
+        }
+
+        Vm.Playlists.Add(new PlaylistItem { Title = Dialog.TextBoxValue, MediaPaths = mediaPaths });
+        //TODO: deve vir então a chamada de um serviço pra salvar esses dados num arquivo.
+
+    }
+
     public void AddPlaylist(object? sender, RoutedEventArgs e)
     {
-        AddPlaylistAsync();
+        AddPlaylistAsync(sender);
     }
 
     public void DeletePlaylist(object? sender, RoutedEventArgs e)
     {
         DeletePlaylistAsync();
     }
-    private async Task AddPlaylistAsync()
+    private async Task AddPlaylistAsync(object? invoker)
     {
         var dialog = new Dialog("Digite o nome do novo item:", modoAdicionar: true);
+        dialog.DataContext = DataContext;
 
         var window = TopLevel.GetTopLevel(this) as Window;
 
@@ -236,8 +251,14 @@ public partial class PlaylistDrawer : UserControl
 
         if (resultado == true)
         {
-            // TODO: aqui deve ser chamado o método de adicionar playlist. Tal método é algo que deve vir do viewModel.
-            Debug.WriteLine("Added a new playlist!");
+            FillNewPlaylist();
+            Debug.WriteLine($"Method Invoked by: {invoker}\nAdded a new playlist!\n");
+            Debug.WriteLine($"Playlist's name: {Vm.Playlists.Last().Title}");
+            Debug.WriteLine("Playlist's paths:");
+            foreach (string path in Vm.Playlists.Last().MediaPaths)
+            {
+                Debug.WriteLine($"Path - {path}");
+            }
         }
     }
 

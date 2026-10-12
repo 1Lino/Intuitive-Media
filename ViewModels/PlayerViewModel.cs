@@ -1,15 +1,11 @@
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Windows.Input;
-using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using IntuitiveMedia.Core;
-using IntuitiveMedia.Infrastructure.VLC;
 using IntuitiveMedia.Models;
-using LibVLCSharp.Shared;
 
 namespace IntuitiveMedia.ViewModels;
 
@@ -21,17 +17,13 @@ public sealed partial class PlayerViewModel : ViewModelBase, IDisposable
     // ObservableCollection torna viável o sistema de reposicionamento de vídeos na playlist por meio de draging
     public ObservableCollection<VideoItem> Playlist { get; } = new(); // conjunto de vídeos
 
+    // conjunto de playlists
     public ObservableCollection<PlaylistItem> Playlists { get; } = new ObservableCollection<PlaylistItem>
     {
-        new PlaylistItem { Title = "Playlist 1"},
-        new PlaylistItem { Title = "Playlist 2"},
-        new PlaylistItem { Title = "Playlist 3"},
-        new PlaylistItem { Title = "Playlist 4"},
-        new PlaylistItem { Title = "Playlist 5"},
-        new PlaylistItem { Title = "Playlist 6"},
-        new PlaylistItem { Title = "Playlist 7"},
-        new PlaylistItem { Title = "Playlist 8"},
-    }; // conjunto de playlists
+        // new PlaylistItem { Title = "Playlist 1"},
+    };
+
+
 
     // Ao invés de [ObservableProperty], deve-se usar essa estrutura aqui, que segue INotifyPropertyChanged
     // do ViewModelBase, que basicamente faz o serviço de notificar ao binding da UI quando estas propriedades são mudadas.
