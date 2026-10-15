@@ -59,7 +59,7 @@ public partial class PlayerControls : UserControl
             foreach (var item in novos)
             {
                 // item.PropertyChanged += (_, e) => Console.WriteLine($"[VideoItem] mudou: {e.PropertyName}");
-                item.Thumbnail = await ThumbnailService.GenerateAsync(item.Path);
+                item.Thumbnail = await ThumbnailService.GetOrCreateAsync(item.Path);
             }
         }
         catch (Exception ex)

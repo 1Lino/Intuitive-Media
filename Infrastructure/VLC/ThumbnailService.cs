@@ -4,6 +4,8 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Security.Cryptography;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Avalonia;
@@ -19,30 +21,142 @@ public static class ThumbnailService
     private const int W = 200;
     private const int H = 112;          // 16:9
     private const int Pitch = W * 4;    // RV32 = 4 bytes por pixel
+    private const int CacheVersion = 1;
 
     private static readonly SemaphoreSlim Gate = new(1, 1);   // pra capturar thumb de somente um vídeo por vez
     private static LibVLC? _vlc;
 
-    public static async Task<Bitmap?> GenerateAsync(string videoPath)
+    public static async Task<Bitmap?> GetOrCreateAsync(string videoPath)
     {
         if (Uri.TryCreate(videoPath, UriKind.Absolute, out var uri) && uri.IsFile)
             videoPath = uri.LocalPath;
 
-        // Console.WriteLine($"[Thumb] iniciando: {videoPath} (existe: {File.Exists(videoPath)})");
+        // tenta buscar uma thumb em cache associada ao vídeo:
+        var cachePath = TryGetCachePath(videoPath);
 
+        // verifica se cachePath não é nulo. {} apenas indica que o resultado não é nulo e que deve ser guardado em algo, no caso em "cached";
+        if (cachePath is not null && TryLoadCached(cachePath) is { } cached)
+            return cached; // cached se refere ao arquivo de cache encontrado. A imagem png da thumbnail.
+
+        // caso não haja thumbs salvas em cache, então continua o processo normal de criar nova thumb e salvar novo cache.
         await Gate.WaitAsync();
         try
         {
+            // Outra solicitação pode ter preenchido o cache enquanto esta aguardava. Por isso esta verificação novamente
+            if (cachePath is not null && TryLoadCached(cachePath) is { } cachedAfterWait)
+                return cachedAfterWait;
+
+            // captura a thumb em formato bitmap:
             var bmp = await CaptureAsync(videoPath);
-            // Console.WriteLine($"[Thumb] resultado: {(bmp is null ? "NULL (timeout/sem frame)" : "ok")}");
+            if (bmp is not null && cachePath is not null)
+                SaveCached(bmp, cachePath); // salva tal thumb em cache, formato png.
+
             return bmp;
         }
         catch (Exception ex)
         {
-            // Console.WriteLine($"[Thumb] ERRO: {ex}");
+            Console.Error.WriteLine($"Falha ao gerar thumbnail para '{videoPath}': {ex}");
             return null;
         }
         finally { Gate.Release(); }
+    }
+
+    // cria um caminho para o arquivo de cash para a thumb do vídeo.Isto é feito usando o próprio caminho do vídeo, bem como outras propriedades suas.
+    private static string? TryGetCachePath(string videoPath)
+    {
+        try
+        {
+            var file = new FileInfo(videoPath);
+            // verificação básica pra saber se existe o vídeo.
+            if (!file.Exists)
+                return null;
+
+            // puxa o path completo do arquivo de vídeo, e verifica se o sistema operacional é Windows, para então aplicar ToUpperInvariant.
+            var normalizedPath = Path.GetFullPath(file.FullName);
+            if (OperatingSystem.IsWindows())
+                normalizedPath = normalizedPath.ToUpperInvariant();
+
+            // cria uma identificação para o cache, de modo que a thumb de cada vídeo tenha sua identificação única.
+            var cacheKey = string.Join(
+                "|",
+                CacheVersion,
+                normalizedPath,
+                file.Length,
+                file.LastWriteTimeUtc.Ticks);
+
+            // cria um código hash a partir da cacheKey.
+            var hash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(cacheKey)));
+
+            // isso aqui se refere a esse diretório: %LocalAppData%\IntuitiveMedia\Thumbnails
+            var cacheDirectory = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                "IntuitiveMedia",
+                "Thumbnails");
+
+            // retorna um caminho para o arquivo cache criado. Ex.: %LocalAppData%\IntuitiveMedia\Thumbnails\hash-hdsk83uh312kjdhashdcash.png 
+            return Path.Combine(cacheDirectory, $"{hash}.png");
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or ArgumentException)
+        {
+            Console.Error.WriteLine($"Não foi possível calcular a chave do cache para '{videoPath}': {ex.Message}");
+            return null;
+        }
+    }
+
+    // Tenta carregar o arquivo de thumbnail em cache, mas, caso tal arquivo exista.
+    private static Bitmap? TryLoadCached(string cachePath)
+    {
+        if (!File.Exists(cachePath))
+            return null;
+
+        try
+        {
+            // retorna o arquivo de cache carregado
+            using var stream = File.OpenRead(cachePath);
+            return new Bitmap(stream);
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or ArgumentException or InvalidOperationException)
+        {
+            Console.Error.WriteLine($"Cache de thumbnail inválido em '{cachePath}': {ex.Message}");
+
+            // se houver ocorrido algum erro/exceção dos tipos especificados acima, tenta deletar tal arquivo de cache, pois não será mais necessário
+            try
+            {
+                File.Delete(cachePath);
+            }
+            catch (Exception deleteException) when (deleteException is IOException or UnauthorizedAccessException)
+            {
+                Console.Error.WriteLine($"Não foi possível remover o cache inválido '{cachePath}': {deleteException.Message}");
+            }
+
+            return null;
+        }
+    }
+
+    private static void SaveCached(Bitmap bitmap, string cachePath)
+    {
+        var temporaryPath = $"{cachePath}.{Guid.NewGuid():N}.tmp";
+        try
+        {
+            Directory.CreateDirectory(Path.GetDirectoryName(cachePath)!);
+            using (var stream = File.Create(temporaryPath))
+                bitmap.Save(stream, PngBitmapEncoderOptions.Default);
+
+            File.Move(temporaryPath, cachePath, overwrite: true);
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or ArgumentException or NotSupportedException)
+        {
+            Console.Error.WriteLine($"Não foi possível salvar o cache da thumbnail em '{cachePath}': {ex.Message}");
+
+            try
+            {
+                File.Delete(temporaryPath);
+            }
+            catch (Exception deleteException) when (deleteException is IOException or UnauthorizedAccessException)
+            {
+                Console.Error.WriteLine($"Não foi possível remover o arquivo temporário '{temporaryPath}': {deleteException.Message}");
+            }
+        }
     }
 
     private const double GoodEnough = 50;   // IMPORTANTE: essa é a nota a partir da qual esse sistema deve parar de procurar pelo frame perfeito
