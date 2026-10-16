@@ -3,6 +3,7 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Windows.Input;
+using Avalonia.Media.Imaging;
 using CommunityToolkit.Mvvm.Input;
 using IntuitiveMedia.Core;
 using IntuitiveMedia.Models;
@@ -36,6 +37,7 @@ public sealed partial class PlayerViewModel : ViewModelBase, IDisposable
     private bool _isPlaylistEnd = false;
     private VideoItem _currentFile;
     private PlaylistItem _currentPlaylist;
+    private Bitmap _currentPlaylistThumbnail;
     private PlaybackState _state;
     private TimeSpan _position;
     private TimeSpan _duration;
@@ -146,6 +148,12 @@ public sealed partial class PlayerViewModel : ViewModelBase, IDisposable
     {
         get => _isPlaylistEnd;
         set => SetField(ref _isPlaylistEnd, value);
+    }
+
+    public Bitmap CurrentPlaylistThumbnail
+    {
+        get => _currentPlaylistThumbnail;
+        set => SetField(ref _currentPlaylistThumbnail, value);
     }
 
     public VideoItem CurrentFile

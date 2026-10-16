@@ -58,9 +58,10 @@ public partial class PlayerControls : UserControl
             // miniaturas: uma por vez, aparecem conforme ficam prontas
             foreach (var item in novos)
             {
-                // item.PropertyChanged += (_, e) => Console.WriteLine($"[VideoItem] mudou: {e.PropertyName}");
                 item.Thumbnail = await ThumbnailService.GetOrCreateAsync(item.Path);
             }
+            // pega a primeira miniatura e define como thumb para a playlist atual.
+            vm.CurrentPlaylistThumbnail = await ThumbnailService.GetOrCreateAsync(novos[0].Path);
         }
         catch (Exception ex)
         {

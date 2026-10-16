@@ -226,7 +226,14 @@ public partial class PlaylistDrawer : UserControl
             mediaPaths.Add(item.Path);
         }
 
-        Vm.Playlists.Add(new PlaylistItem { Title = Dialog.TextBoxValue, MediaPaths = mediaPaths });
+        Vm.Playlists.Add(
+            new PlaylistItem
+            {
+                Title = Dialog.TextBoxValue,
+                MediaPaths = mediaPaths,
+                Thumbnail = Vm.CurrentPlaylistThumbnail
+            });
+
         //TODO: deve vir então a chamada de um serviço pra salvar esses dados num arquivo.
 
     }
