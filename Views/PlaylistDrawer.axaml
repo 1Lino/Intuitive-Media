@@ -74,9 +74,22 @@
                                     DragDrop.Drop="Item_Drop">
                                 <StackPanel Spacing="4" VerticalAlignment="Center">
                                     <TextBlock Text="{Binding Title}" HorizontalAlignment="Center" />
-                                    <Border Width="100" Height="60" Background="Gray" CornerRadius="4"
+                                    <Border Width="100" Height="60"
+                                            Background="Gray" CornerRadius="4"
                                             ClipToBounds="True">
-                                        <Image Source="{Binding Thumbnail}" Stretch="UniformToFill" />
+                                        <Grid>
+                                            <Image Source="{Binding Thumbnail}" Stretch="UniformToFill" />
+                                            <Button Content="▶"
+                                                    Width="36" Height="36"
+                                                    Padding="0"
+                                                    HorizontalAlignment="Center"
+                                                    VerticalAlignment="Center"
+                                                    Background="#B3000000"
+                                                    Foreground="White"
+                                                    BorderBrush="Transparent"
+                                                    ToolTip.Tip="Reproduzir playlist"
+                                                    Click="PlayPlaylist" />
+                                        </Grid>
                                     </Border>
                                 </StackPanel>
                             </Border>

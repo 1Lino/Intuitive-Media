@@ -33,6 +33,34 @@ public partial class PlaylistDrawer : UserControl
 
     private PlayerViewModel? Vm => DataContext as PlayerViewModel;
 
+    private void PlayPlaylist(object? sender, RoutedEventArgs e)
+    {
+        if (sender is not Control { DataContext: PlaylistItem playlist } ||
+            Vm is not { } vm)
+            return;
+
+        if (playlist.MediaPaths.Count == 0)
+        {
+            Debug.WriteLine($"Playlist '{playlist.Title}' has no media to play.");
+            return;
+        }
+
+        vm.CurrentPlaylist = playlist;
+        vm.Playlist.Clear();
+        foreach (var path in playlist.MediaPaths)
+        {
+            vm.Playlist.Add(new VideoItem
+            {
+                Title = System.IO.Path.GetFileName(path),
+                Path = path
+            });
+        }
+
+        vm.CurrentFile = vm.Playlist[0];
+        vm.Play(vm.CurrentFile);
+        vm.IsMouseDragging = false;
+    }
+
     private void Item_PointerPressed(object? sender, PointerPressedEventArgs e)
     {
         if (sender is Control { DataContext: PlaylistItem item } c &&

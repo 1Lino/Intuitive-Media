@@ -18,7 +18,7 @@ public sealed partial class PlayerViewModel : ViewModelBase, IDisposable
     // ObservableCollection torna viável o sistema de reposicionamento de vídeos na playlist por meio de draging
     public ObservableCollection<VideoItem> Playlist { get; } = new(); // conjunto de vídeos
 
-    // conjunto de playlists
+    // conjunto de playlists.
     public ObservableCollection<PlaylistItem> Playlists { get; } = new ObservableCollection<PlaylistItem>
     {
         // new PlaylistItem { Title = "Playlist 1"},
