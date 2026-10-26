@@ -13,6 +13,7 @@ using Avalonia.Animation.Easings;
 using Avalonia.Styling;
 using System.Collections.Generic;
 using Avalonia.Interactivity;
+using IntuitiveMedia.Services;
 
 namespace IntuitiveMedia.Views;
 
@@ -33,7 +34,7 @@ public partial class PlaylistDrawer : UserControl
 
     private PlayerViewModel? Vm => DataContext as PlayerViewModel;
 
-    private void PlayPlaylist(object? sender, RoutedEventArgs e)
+    private async void PlayPlaylist(object? sender, RoutedEventArgs e)
     {
         if (sender is not Control { DataContext: PlaylistItem playlist } ||
             Vm is not { } vm)
@@ -52,7 +53,8 @@ public partial class PlaylistDrawer : UserControl
             vm.Playlist.Add(new VideoItem
             {
                 Title = System.IO.Path.GetFileName(path),
-                Path = path
+                Path = path,
+                Thumbnail = await ThumbnailService.GetOrCreateAsync(path)
             });
         }
 
