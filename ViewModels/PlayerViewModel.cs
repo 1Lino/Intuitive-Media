@@ -1,12 +1,18 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Input;
 using Avalonia.Media.Imaging;
 using CommunityToolkit.Mvvm.Input;
 using IntuitiveMedia.Core;
 using IntuitiveMedia.Models;
+using IntuitiveMedia.Services;
 
 namespace IntuitiveMedia.ViewModels;
 
@@ -23,8 +29,6 @@ public sealed partial class PlayerViewModel : ViewModelBase, IDisposable
     {
         // new PlaylistItem { Title = "Playlist 1"},
     };
-
-
 
     // Ao invés de [ObservableProperty], deve-se usar essa estrutura aqui, que segue INotifyPropertyChanged
     // do ViewModelBase, que basicamente faz o serviço de notificar ao binding da UI quando estas propriedades são mudadas.
@@ -56,6 +60,12 @@ public sealed partial class PlayerViewModel : ViewModelBase, IDisposable
         loop = "Playlist Loop",
         shuffle = "Shuffle"
     };
+
+
+    private AppSettings _settings = new();
+    private PlaylistData? _current;
+    private CancellationTokenSource? _saveCts;
+    private bool _loading;
 
     // Adiante tudo os que ficará exposto no para o resto do projeto:
 
@@ -313,6 +323,160 @@ public sealed partial class PlayerViewModel : ViewModelBase, IDisposable
         Position = clampedPosition;
         _player.Seek(clampedPosition);
     }
+
+    public void Initialize()
+    {
+        _settings = SettingsStore.Load();
+
+        var data = _settings.Playlists.FirstOrDefault(p => p.Id == _settings.CurrentPlaylistId);
+        if (data is not null)
+            LoadPlaylist(data);
+
+        Playlist.CollectionChanged += OnPlaylistChanged;   // Add, Move e Remove salvam sozinhos
+    }
+
+    private void OnPlaylistChanged(object? s, NotifyCollectionChangedEventArgs e)
+    {
+        if (!_loading) RequestSave();
+    }
+
+    // TODO: esse método existe também em PlaylistDrawer, e é uma duplicata. Lá, ele é usado na criação de playlist, mas, aqui, é usado para carregar a playlist visualmente no drawer. Então preciso ver o que é necessário nesse código e o que não é. Por hora fica assim mesmo, pra fins de teste.
+    public async Task FillNewPlaylistAsync(string playlistName)
+    {
+        // Bitmap loadedThumb = await ThumbnailService.GetOrCreateAsync(Playlist[0].Path);
+
+        List<string> mediaPaths = new List<string>();
+
+        foreach (VideoItem item in Playlist)
+        {
+            mediaPaths.Add(item.Path);
+        }
+
+        Playlists.Add(
+            new PlaylistItem
+            {
+                Title = playlistName,
+                MediaPaths = mediaPaths,
+                Thumbnail = CurrentPlaylistThumbnail
+            });
+
+    }
+
+    public void LoadPlaylist(PlaylistData data)
+    {
+        _loading = true;
+        try
+        {
+            _current = data;
+            _settings.CurrentPlaylistId = data.Id;
+
+            Playlist.Clear();
+
+            // carrega os vídeos da playlist no drawer
+            foreach (var i in data.Items)
+            {
+                Playlist.Add(new VideoItem
+                {
+                    Id = i.Id,
+                    Title = i.Title,
+                    Path = i.Path,
+                    IsMissing = !File.Exists(i.Path)
+                });
+            }
+
+            // TODO: é necessário fazer com que a linha comentada logo mais abaixo funcione, isto é, CurrentFile, que é o vídeo atual que deve ser executado pelo player, deve ser o do vídeo salvo pela playlist quando o usuário saiu.
+            CurrentFile = Playlist.First(); // essa funciona
+            // CurrentFile = Playlist.FirstOrDefault(v => v.Id == data.CurrentItemId); // essa retorna nullException
+
+            CurrentPlaylistThumbnail = data.Thumbnail;
+
+            // carrega a playlist no drawer de playlists
+            FillNewPlaylistAsync(data.Name);
+        }
+        finally
+        {
+            _loading = false;
+            Console.WriteLine(CurrentFile is not null ? "Current file is not null" : "Current file is null");
+            Play(CurrentFile);
+        }
+
+        _ = LoadThumbnailsAsync(Playlist.Where(v => !v.IsMissing).ToList());
+    }
+
+    // pra carregar as thumbs dos vídeos quando uma playlist for carregada:
+    private static async Task LoadThumbnailsAsync(List<VideoItem> items)
+    {
+        foreach (var item in items)
+            item.Thumbnail = await ThumbnailService.GetOrCreateAsync(item.Path);
+    }
+
+    // cria a playlist "padrão" só quando o usuário adiciona o primeiro vídeo
+    private void EnsureCurrent()
+    {
+        if (_current is not null) return;
+        _current = new PlaylistData { Name = "Minha playlist" };
+        _settings.Playlists.Add(_current);
+        _settings.CurrentPlaylistId = _current.Id;
+    }
+
+    private void SyncToSettings()
+    {
+        EnsureCurrent();
+        _current!.Items = Playlist
+            .Select(v => new ItemData { Id = v.Id, Path = v.Path, Title = v.Title })
+            .ToList();
+        _current.CurrentItemId = CurrentFile?.Id;
+        if (_current.CurrentItemId is null) _current.PositionMs = 0;
+    }
+
+    // debounce: vários eventos seguidos viram um único salvamento
+    public async void RequestSave()
+    {
+        _saveCts?.Cancel();
+        var cts = _saveCts = new CancellationTokenSource();
+        try
+        {
+            await Task.Delay(1500, cts.Token);
+            FlushSave();
+        }
+        catch (OperationCanceledException) { }
+    }
+
+    public void FlushSave()
+    {
+        SyncToSettings();
+        SettingsStore.Save(_settings);
+    }
+
+    // chame a cada ~5 s a partir do timer do seu player, e ao trocar de mídia
+    public void UpdateProgress(long positionMs)
+    {
+        EnsureCurrent();
+        _current!.CurrentItemId = CurrentFile?.Id;
+        _current.PositionMs = CurrentFile is null ? 0 : Math.Max(0, positionMs);
+        RequestSave();
+    }
+
+    public async Task<PlaylistData> ImportPlaylist(string name, IEnumerable<M3u8Playlist.Entry> entries)
+    {
+        var data = new PlaylistData
+        {
+            Name = name,
+            Items = entries.Select(e => new ItemData
+            {
+                Path = e.Path,
+                Title = e.Title ?? System.IO.Path.GetFileNameWithoutExtension(e.Path)
+            }).ToList(),
+            Thumbnail = await ThumbnailService.GetOrCreateAsync(entries.First().Path)
+        };
+        _settings.Playlists.Add(data);
+        LoadPlaylist(data);
+        RequestSave();
+        return data;
+    }
+
+    public IEnumerable<ItemData> CurrentItems() =>
+    Playlist.Select(v => new ItemData { Id = v.Id, Path = v.Path, Title = v.Title });
 
     private void OnStateChanged(object? sender, PlaybackStateChangedEventArgs e)
     {

@@ -47,7 +47,8 @@ public partial class PlayerControls : UserControl
             vm.Playlist.Clear(); // zera a playlista toda vez que o usuário abrir o modal de seleção de vídeo.
             foreach (var file in files)
             {
-                var item = new VideoItem { Title = file.Name, Path = file.Path.ToString() };
+                // var item = new VideoItem { Title = file.Name, Path = file.Path.ToString() };
+                var item = new VideoItem { Title = file.Name, Path = file.Path.LocalPath };
                 vm.Playlist.Add(item);
                 novos.Add(item);
             }

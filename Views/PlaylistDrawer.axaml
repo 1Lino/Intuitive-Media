@@ -112,7 +112,7 @@
                             HorizontalAlignment="Center"
                             Margin="10">
 
-                    <Button Content="Load"></Button>
+                    <Button Content="Load" Click="LoadPlaylist"></Button>
                     <Button Content="Add" Click="AddPlaylist"></Button>
                     <Button Content="Delete" Click="DeletePlaylist"></Button>
                 </StackPanel>

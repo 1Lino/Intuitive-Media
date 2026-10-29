@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Avalonia.Media.Imaging;
 
 public enum RepeatMode { None, One, All }
 
@@ -25,6 +26,7 @@ public class PlaylistData
     public Guid Id { get; set; } = Guid.NewGuid();
     public string Name { get; set; } = "";
     public List<ItemData> Items { get; set; } = new();
+    public Bitmap Thumbnail { get; set; }
     public Guid? CurrentItemId { get; set; }
     public long PositionMs { get; set; }
 }

@@ -12,6 +12,9 @@ using Avalonia.Animation.Easings;
 using Avalonia.Media;
 using Avalonia.Styling;
 using System.Diagnostics;
+using Avalonia.Platform.Storage;
+using IntuitiveMedia.Services;
+using Avalonia.Interactivity;
 
 namespace IntuitiveMedia.Views;
 

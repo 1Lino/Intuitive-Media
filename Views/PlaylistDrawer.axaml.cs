@@ -14,6 +14,7 @@ using Avalonia.Styling;
 using System.Collections.Generic;
 using Avalonia.Interactivity;
 using IntuitiveMedia.Services;
+using Avalonia.Platform.Storage;
 
 namespace IntuitiveMedia.Views;
 
@@ -247,7 +248,7 @@ public partial class PlaylistDrawer : UserControl
         target.RenderTransform = null;   // pra limpar o deslocamento inicial quando terminar a animação
     }
 
-    public void FillNewPlaylist()
+    public void FillNewPlaylist(string playlistName)
     {
         List<string> mediaPaths = new List<string>();
 
@@ -259,44 +260,52 @@ public partial class PlaylistDrawer : UserControl
         Vm.Playlists.Add(
             new PlaylistItem
             {
-                Title = Dialog.TextBoxValue,
+                Title = playlistName,
                 MediaPaths = mediaPaths,
                 Thumbnail = Vm.CurrentPlaylistThumbnail
             });
 
-        //TODO: deve vir então a chamada de um serviço pra salvar esses dados num arquivo.
+    }
 
+    public void LoadPlaylist(object? sender, RoutedEventArgs e)
+    {
+        ImportarPlaylist(sender, e);
     }
 
     public void AddPlaylist(object? sender, RoutedEventArgs e)
     {
-        AddPlaylistAsync(sender);
+        AddPlaylistAsync(sender, e);
     }
 
     public void DeletePlaylist(object? sender, RoutedEventArgs e)
     {
         DeletePlaylistAsync();
     }
-    private async Task AddPlaylistAsync(object? invoker)
+    private async Task AddPlaylistAsync(object? invoker, RoutedEventArgs e)
     {
-        var dialog = new Dialog("Digite o nome do novo item:", modoAdicionar: true);
-        dialog.DataContext = DataContext;
+        if (Vm.Playlist.Count == 0) return;
 
-        var window = TopLevel.GetTopLevel(this) as Window;
+        ExportarPlaylist(invoker, e);  // chama tela de diálogo para selecionar o lugar para onde salvar a playlist.
 
-        bool? resultado = await dialog.ShowDialog<bool?>(window);
+        // var dialog = new Dialog("Digite o nome do novo item:", modoAdicionar: true);
+        // dialog.DataContext = DataContext;
 
-        if (resultado == true)
-        {
-            FillNewPlaylist();
-            Debug.WriteLine($"Method Invoked by: {invoker}\nAdded a new playlist!\n");
-            Debug.WriteLine($"Playlist's name: {Vm.Playlists.Last().Title}");
-            Debug.WriteLine("Playlist's paths:");
-            foreach (string path in Vm.Playlists.Last().MediaPaths)
-            {
-                Debug.WriteLine($"Path - {path}");
-            }
-        }
+        // var window = TopLevel.GetTopLevel(this) as Window;
+
+        // bool? resultado = await dialog.ShowDialog<bool?>(window);
+
+        // if (resultado == true)
+        // {
+
+        //     FillNewPlaylist();
+        //     Debug.WriteLine($"Method Invoked by: {invoker}\nAdded a new playlist!\n");
+        //     Debug.WriteLine($"Playlist's name: {Vm.Playlists.Last().Title}");
+        //     Debug.WriteLine("Playlist's paths:");
+        //     foreach (string path in Vm.Playlists.Last().MediaPaths)
+        //     {
+        //         Debug.WriteLine($"Path - {path}");
+        //     }
+        // }
     }
 
     private async Task DeletePlaylistAsync()
@@ -312,5 +321,60 @@ public partial class PlaylistDrawer : UserControl
             // TODO: aqui deve ser chamado o método de deletar playlist. Tal método é algo que deve vir do viewModel.
             Debug.WriteLine("Deleted a playlist!");
         }
+    }
+
+    private async void ExportarPlaylist(object? sender, RoutedEventArgs e)
+    {
+        try
+        {
+            if (DataContext is not PlayerViewModel vm || TopLevel.GetTopLevel(this) is not { } top)
+                return;
+
+            var file = await top.StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
+            {
+                Title = "Exportar playlist",
+                SuggestedFileName = "playlist",
+                DefaultExtension = "m3u8",
+                FileTypeChoices = new[]
+                {
+                new FilePickerFileType("Playlist M3U8") { Patterns = new[] { "*.m3u8" } }
+            }
+            });
+
+            if (file?.TryGetLocalPath() is { } path)
+            {
+                M3u8Playlist.Save(path, vm.CurrentItems());
+                FillNewPlaylist(System.IO.Path.GetFileNameWithoutExtension(file.Name));
+            }
+
+        }
+        catch (Exception ex) { Debug.WriteLine(ex); }
+    }
+
+    private async void ImportarPlaylist(object? sender, RoutedEventArgs e)
+    {
+        // TODO: deve haver algo aqui que verifique se a playlist a ser carregada já foi carregada antes, para impedir de popular o drawer de playlists de duplicatas.
+        try
+        {
+            if (DataContext is not PlayerViewModel vm || TopLevel.GetTopLevel(this) is not { } top)
+                return;
+
+            var files = await top.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
+            {
+                Title = "Importar playlist",
+                AllowMultiple = false,
+                FileTypeFilter = new[]
+                {
+                new FilePickerFileType("Playlist") { Patterns = new[] { "*.m3u8", "*.m3u" } }
+            }
+            });
+
+            if (files.Count == 0 || files[0].TryGetLocalPath() is not { } path)
+                return;
+
+            var entries = M3u8Playlist.Load(path);
+            vm.ImportPlaylist(System.IO.Path.GetFileNameWithoutExtension(path), entries);
+        }
+        catch (Exception ex) { Debug.WriteLine(ex); }
     }
 }
