@@ -8,6 +8,21 @@
              d:DesignWidth="600" d:DesignHeight="450"
              >
 
+    <UserControl.Styles>
+        <Style Selector="Button.btn-videos PathIcon">
+            <Setter Property="Data" Value="M5 4a3 3 0 0 0-3 3v6a3 3 0 0 0 3 3h5a3 3 0 0 0 3-3v-.321l3.037 2.097a1.25 1.25 0 0 0 1.96-1.029V6.252a1.25 1.25 0 0 0-1.96-1.028L13 7.32V7a3 3 0 0 0-3-3zm8 4.536l3.605-2.49a.25.25 0 0 1 .392.206v7.495a.25.25 0 0 1-.392.206L13 11.463zM3 7a2 2 0 0 1 2-2h5a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+        </Style>
+
+        <Style Selector="Button.btn-videos:pointerover PathIcon">
+            <Setter Property="Data" Value="M2 7a3 3 0 0 1 3-3h5a3 3 0 0 1 3 3v6a3 3 0 0 1-3 3H5a3 3 0 0 1-3-3zm14.037 7.776L14 13.369V6.63l2.037-1.406a1.25 1.25 0 0 1 1.96 1.028v7.495a1.25 1.25 0 0 1-1.96 1.029" />
+        </Style>
+
+        <Style Selector="Button.btn-videos /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderBrush" Value="Transparent" />
+        </Style>
+    </UserControl.Styles>
+
     <Grid
         VerticalAlignment="Top"
         HorizontalAlignment="Center"
@@ -15,12 +30,14 @@
         PointerEntered="OnMouseOver"
         PointerExited="OnMouseExit">
 
-        <Button Name="ToggleVideoDrawerBtn"
-                Content="Videos"
+        <Button Classes="btn-videos"
+                Name="ToggleVideoDrawerBtn"
                 VerticalAlignment="Top"
                 HorizontalAlignment="Center"
                 Margin="10"
-                Click="ToggleDrawerVisibility"></Button>
+                Click="ToggleDrawerVisibility">
+            <PathIcon />
+        </Button>
 
         <!-- Ao clicar no botão acima, a propriedade IsVideoDrawerOn mudará entre True e False, fazendo a visibilidade do controle abaixo responder conforme este dado através de Data-Binding no contexto de MainViewModel-->
         <control:MediaDrawer IsVisible="{Binding IsVideoDrawerOn}"/>

@@ -9,7 +9,7 @@
 
         <!-- Configurações de estilo para os ícones dos botões. Basta copiar a propriedade d dos svgs da pasta assets e passá-los ao Value dos setters dos seletores abaixo -->
         <UserControl.Styles>
-                <!-- LOAD VIDEOS -->
+                <!-- LOAD VIDEOS ICON -->
                 <Style Selector="Button.btn-loadVideos PathIcon">
                         <Setter Property="Data" Value="M16 5.268V13a3 3 0 0 1-3 3H5.268A2 2 0 0 0 7 17h6a4 4 0 0 0 4-4V7a2 2 0 0 0-1-1.732M11.5 9.5a.5.5 0 0 0 0-1h-2v-2a.5.5 0 1 0-1 0v2h-2a.5.5 0 0 0 0 1h2v2a.5.5 0 0 0 1 0v-2zM13 3a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2zm1 2a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1z" />
                 </Style>
@@ -18,7 +18,7 @@
                         <Setter Property="Data" Value="M16 5.268A2 2 0 0 1 17 7v6a4 4 0 0 1-4 4H7a2 2 0 0 1-1.732-1H13a3 3 0 0 0 3-3zM15 5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2zm-3 4a.5.5 0 0 1-.5.5h-2v2a.5.5 0 0 1-1 0v-2h-2a.5.5 0 1 1 0-1h2v-2a.5.5 0 1 1 1 0v2h2a.5.5 0 0 1 .5.5" />
                 </Style>
 
-                <!-- PREVIOUS VIDEO -->
+                <!-- PREVIOUS VIDEO ICON -->
                 <Style Selector="Button.btn-prev PathIcon">
                         <Setter Property="Data" Value="M3 3.5a.5.5 0 0 1 1 0v13a.5.5 0 0 1-1 0zm14 .752c0-1-1.117-1.595-1.947-1.038l-8.5 5.707a1.25 1.25 0 0 0-.006 2.071l8.499 5.793A1.25 1.25 0 0 0 17 15.752zm-1.39-.207a.25.25 0 0 1 .39.207v11.5c0 .2-.225.32-.391.207l-8.5-5.793a.25.25 0 0 1 .002-.414z" />
                 </Style>
@@ -27,16 +27,24 @@
                         <Setter Property="Data" Value="M17 4.252c0-1-1.116-1.595-1.947-1.038L6.554 8.921a1.25 1.25 0 0 0-.007 2.071l8.5 5.793A1.25 1.25 0 0 0 17 15.752zM3 3.5a.5.5 0 0 1 1 0v13a.5.5 0 0 1-1 0z" />
                 </Style>
 
-                <!-- PLAY/PAUSE VIDEO -->
-                <Style Selector="Button.btn-play PathIcon">
+                <!-- PLAY/PAUSE VIDEO ICON -->
+                <Style Selector="ToggleButton.btn-play PathIcon">
+                        <Setter Property="Data" Value="M10 2a8 8 0 1 1 0 16a8 8 0 0 1 0-16m0 1a7 7 0 1 0 0 14a7 7 0 0 0 0-14M8.5 6.5A.5.5 0 0 1 9 7v6a.5.5 0 0 1-1 0V7a.5.5 0 0 1 .5-.5m3 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V7a.5.5 0 0 1 .5-.5" />
+                </Style>
+
+                <Style Selector="ToggleButton.btn-play:pointerover PathIcon">
+                        <Setter Property="Data" Value="M10 2a8 8 0 1 1 0 16a8 8 0 0 1 0-16M8.5 6.5A.5.5 0 0 0 8 7v6a.5.5 0 0 0 1 0V7a.5.5 0 0 0-.5-.5m3 0a.5.5 0 0 0-.5.5v6a.5.5 0 0 0 1 0V7a.5.5 0 0 0-.5-.5" />
+                </Style>
+
+                <Style Selector="ToggleButton.btn-play:checked PathIcon">
                         <Setter Property="Data" Value="M9.125 7.184A.75.75 0 0 0 8 7.834v4.333a.75.75 0 0 0 1.125.65l4.125-2.384a.5.5 0 0 0 0-.866zM2 10a8 8 0 1 1 16 0a8 8 0 0 1-16 0m8-7a7 7 0 1 0 0 14a7 7 0 0 0 0-14" />
                 </Style>
 
-                <Style Selector="Button.btn-play:pointerover PathIcon">
+                <Style Selector="ToggleButton.btn-play:checked:pointerover PathIcon">
                         <Setter Property="Data" Value="M2 10a8 8 0 1 1 16 0a8 8 0 0 1-16 0m6-2.167v4.334a.75.75 0 0 0 1.125.65l4.125-2.384a.5.5 0 0 0 0-.866L9.125 7.184A.75.75 0 0 0 8 7.834" />
                 </Style>
 
-                <!-- NEXT VIDEO -->
+                <!-- NEXT VIDEO ICON -->
                 <Style Selector="Button.btn-next PathIcon">
                         <Setter Property="Data" Value="M17 3.5a.5.5 0 0 0-1 0v13a.5.5 0 1 0 1 0zM3 4.252c0-1 1.117-1.595 1.947-1.038l8.5 5.707a1.25 1.25 0 0 1 .007 2.071l-8.5 5.793A1.25 1.25 0 0 1 3 15.752zm1.39-.207a.25.25 0 0 0-.39.207v11.5c0 .2.225.32.391.207l8.5-5.793a.25.25 0 0 0-.002-.414z" />
                 </Style>
@@ -45,7 +53,7 @@
                         <Setter Property="Data" Value="M3 4.252c0-1 1.116-1.595 1.947-1.038l8.499 5.707a1.25 1.25 0 0 1 .007 2.071l-8.5 5.793A1.25 1.25 0 0 1 3 15.752zM17 3.5a.5.5 0 0 0-1 0v13a.5.5 0 1 0 1 0z" />
                 </Style>
 
-                <!-- PLAYER CONFIG -->
+                <!-- PLAYER CONFIG ICON -->
                 <Style Selector="DropDownButton.btn-config PathIcon#configIcon">
                         <Setter Property="Data" Value="M14.95 5a2.5 2.5 0 0 0-4.9 0H2.5a.5.5 0 0 0 0 1h7.55a2.5 2.5 0 0 0 4.9 0h2.55a.5.5 0 0 0 0-1zM12.5 7a1.5 1.5 0 1 1 0-3a1.5 1.5 0 0 1 0 3m-2.55 7a2.5 2.5 0 0 0-4.9 0H2.5a.5.5 0 0 0 0 1h2.55a2.5 2.5 0 0 0 4.9 0h7.55a.5.5 0 0 0 0-1zM7.5 16a1.5 1.5 0 1 1 0-3a1.5 1.5 0 0 1 0 3" />
                 </Style>
@@ -54,13 +62,55 @@
                         <Setter Property="Data" Value="M9.95 14a2.5 2.5 0 0 0-4.9 0H2.5a.5.5 0 0 0 0 1h2.55a2.5 2.5 0 0 0 4.9 0h7.55a.5.5 0 0 0 0-1zm5-9a2.5 2.5 0 0 0-4.9 0H2.5a.5.5 0 0 0 0 1h7.55a2.5 2.5 0 0 0 4.9 0h2.55a.5.5 0 0 0 0-1z" />
                 </Style>
 
-                <!-- VOLUME CONFIG -->
-                <Style Selector="Button.btn-volume PathIcon">
+                <!-- VOLUME ICON -->
+                <Style Selector="ToggleButton.btn-volume PathIcon">
                         <Setter Property="Data" Value="M11.996 3.006c0-.873-1.04-1.327-1.68-.733L6.444 5.866a.5.5 0 0 1-.34.134H3.496a1.5 1.5 0 0 0-1.5 1.5v5a1.5 1.5 0 0 0 1.5 1.5h2.608a.5.5 0 0 1 .34.133l3.872 3.594c.64.593 1.68.14 1.68-.733zM7.124 6.599l3.872-3.593v13.988L7.124 13.4a1.5 1.5 0 0 0-1.02-.4H3.496a.5.5 0 0 1-.5-.5v-5a.5.5 0 0 1 .5-.5h2.608a1.5 1.5 0 0 0 1.02-.4m8.132-1.972a.5.5 0 0 1 .706.04a8 8 0 0 1 0 10.666a.5.5 0 0 1-.745-.667a7 7 0 0 0 0-9.333a.5.5 0 0 1 .039-.706m-1.176 8.306a.5.5 0 0 1-.183-.683a4.5 4.5 0 0 0 0-4.5a.5.5 0 1 1 .865-.5a5.5 5.5 0 0 1 .001 5.5a.5.5 0 0 1-.683.183" />
                 </Style>
 
-                <Style Selector="Button.btn-volume:pointerover PathIcon">
+                <Style Selector="ToggleButton.btn-volume:pointerover PathIcon">
                         <Setter Property="Data" Value="M12 3.006c0-.873-1.04-1.327-1.68-.733L6.448 5.866a.5.5 0 0 1-.34.134H3.5A1.5 1.5 0 0 0 2 7.5v5A1.5 1.5 0 0 0 3.5 14h2.607a.5.5 0 0 1 .34.133l3.873 3.594c.64.593 1.68.14 1.68-.733zm3.254 1.621a.5.5 0 0 1 .706.04a8 8 0 0 1 0 10.666a.5.5 0 1 1-.745-.667a7 7 0 0 0 0-9.333a.5.5 0 0 1 .039-.706m-1.175 8.306a.5.5 0 0 1-.184-.683a4.5 4.5 0 0 0 0-4.5a.5.5 0 1 1 .865-.5a5.5 5.5 0 0 1 .001 5.5a.5.5 0 0 1-.682.183" />
+                </Style>
+
+                <Style Selector="ToggleButton.btn-volume:checked PathIcon">
+                        <Setter Property="Data" Value="M11.996 3.006c0-.873-1.04-1.327-1.68-.733L6.444 5.866a.5.5 0 0 1-.34.134H3.496a1.5 1.5 0 0 0-1.5 1.5v5a1.5 1.5 0 0 0 1.5 1.5h2.608a.5.5 0 0 1 .34.133l3.872 3.594c.64.593 1.68.14 1.68-.733zM7.124 6.599l3.872-3.593v13.988L7.124 13.4a1.5 1.5 0 0 0-1.02-.4H3.496a.5.5 0 0 1-.5-.5v-5a.5.5 0 0 1 .5-.5h2.608a1.5 1.5 0 0 0 1.02-.4m6.019 1.047a.5.5 0 0 1 .707 0l1.646 1.647l1.646-1.647a.5.5 0 1 1 .708.707L16.203 10l1.647 1.646a.5.5 0 1 1-.708.707l-1.646-1.646l-1.646 1.646a.5.5 0 1 1-.707-.707L14.789 10l-1.646-1.647a.5.5 0 0 1 0-.707" />
+                </Style>
+
+                <Style Selector="ToggleButton.btn-volume:checked:pointerover PathIcon">
+                        <Setter Property="Data" Value="M11.996 3.006c0-.873-1.04-1.327-1.68-.733L6.444 5.866a.5.5 0 0 1-.34.134H3.496a1.5 1.5 0 0 0-1.5 1.5v5a1.5 1.5 0 0 0 1.5 1.5h2.608a.5.5 0 0 1 .34.133l3.872 3.594c.64.593 1.68.14 1.68-.733zm1.146 4.64a.5.5 0 0 1 .708 0l1.646 1.647l1.646-1.647a.5.5 0 1 1 .708.707L16.203 10l1.647 1.646a.5.5 0 1 1-.708.707l-1.646-1.646l-1.646 1.646a.5.5 0 1 1-.707-.707L14.789 10l-1.646-1.647a.5.5 0 0 1 0-.707" />
+                </Style>
+
+                <!-- ################## CONTROLE DO PLANO DE FUNDO DOS BOTÕES ################## -->
+
+                <!-- necessário fazer referência ao ContentPresenter, pois ele sobrescreve os estilos locais -->
+                <Style Selector="Button.btn-loadVideos /template/ ContentPresenter#PART_ContentPresenter">
+                        <Setter Property="Background" Value="Transparent" />
+                        <Setter Property="BorderBrush" Value="Transparent" />
+                </Style>
+
+                <Style Selector="Button.btn-prev /template/ ContentPresenter#PART_ContentPresenter">
+                        <Setter Property="Background" Value="Transparent" />
+                        <Setter Property="BorderBrush" Value="Transparent" />
+                </Style>
+
+                <Style Selector="ToggleButton.btn-play /template/ ContentPresenter#PART_ContentPresenter">
+                        <Setter Property="Background" Value="Transparent" />
+                        <Setter Property="BorderBrush" Value="Transparent" />
+                </Style>
+
+                <Style Selector="Button.btn-next /template/ ContentPresenter#PART_ContentPresenter">
+                        <Setter Property="Background" Value="Transparent" />
+                        <Setter Property="BorderBrush" Value="Transparent" />
+                </Style>
+
+                <!-- As propriedades de DropDownButton são controladas pelo RootBorder-->
+                <Style Selector="DropDownButton.btn-config /template/ Border#RootBorder">
+                        <Setter Property="Background" Value="Transparent" />
+                        <Setter Property="BorderBrush" Value="Transparent" />
+                </Style>
+
+                <Style Selector="ToggleButton.btn-volume /template/ ContentPresenter#PART_ContentPresenter">
+                        <Setter Property="Background" Value="Transparent" />
+                        <Setter Property="BorderBrush" Value="Transparent" />
                 </Style>
         </UserControl.Styles>
 
@@ -130,12 +180,12 @@
                                 </Button>
 
 
-                                <Button Classes="btn-play"
-                                        Width="60"
-                                        Height="45"
-                                        Click="PausarMidia">
+                                <ToggleButton Classes="btn-play"
+                                              Width="60"
+                                              Height="45"
+                                              Click="PausarMidia">
                                         <PathIcon />
-                                </Button>
+                                </ToggleButton>
 
                                 <Button Classes="btn-next"
                                         Width="50"
@@ -170,11 +220,12 @@
                                 </DropDownButton>
 
 
-                                <Button Classes="btn-volume"
-                                        Width="50"
-                                        Height="40">
+                                <ToggleButton Classes="btn-volume"
+                                              Width="50"
+                                              Height="40"
+                                              Click="MutarMidia">
                                         <PathIcon />
-                                </Button>
+                                </ToggleButton>
 
                                 <Slider Name="VolumeControl"
                                         Minimum="0"

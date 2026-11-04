@@ -16,9 +16,30 @@ namespace IntuitiveMedia.Views;
 // Todo UserControl precisa de uma classe
 public partial class PlayerControls : UserControl
 {
+    private bool isVolumeMuted = false;
+    int currentMediaVolume = 0;
     public PlayerControls()
     {
         InitializeComponent();
+    }
+
+    private void MutarMidia(object? sender, RoutedEventArgs e)
+    {
+        if (DataContext is PlayerViewModel vm)
+        {
+            if (!isVolumeMuted)
+            {
+                currentMediaVolume = vm.Volume;
+                vm.Volume = 0;
+                isVolumeMuted = true;
+            }
+            else
+            {
+                vm.Volume = currentMediaVolume;
+                isVolumeMuted = false;
+            }
+
+        }
     }
 
     private async void CarregarMidia(object? sender, RoutedEventArgs e)
@@ -95,8 +116,6 @@ public partial class PlayerControls : UserControl
         }
     }
 
-    // TODO 1: observar se existe algum problema de race condition no uso destes métodos pelo evento de clique dos botões, ou qualquer outra anormalidade. 
-    // TODO 2: É necessário observar o que acontece se o usuário mudar a ordem dos vídeos na playlist; 
     private void ProximaMidia(object? sender, RoutedEventArgs e)
     {
         if (DataContext is not PlayerViewModel vm || vm.Playlist.Count == 0)
