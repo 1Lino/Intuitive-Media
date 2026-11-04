@@ -40,7 +40,7 @@ public sealed partial class PlayerViewModel : ViewModelBase, IDisposable
     private bool _shuffle = false;
     private bool _isPlaylistEnd = false;
     private VideoItem? _currentFile;
-    private PlaylistItem _currentPlaylist;
+    private PlaylistItem? _currentPlaylist;
     private Bitmap? _currentPlaylistThumbnail;
     private PlaybackState _state;
     private TimeSpan _position;
@@ -190,7 +190,7 @@ public sealed partial class PlayerViewModel : ViewModelBase, IDisposable
         }
     }
 
-    public PlaylistItem CurrentPlaylist
+    public PlaylistItem? CurrentPlaylist
     {
         get => _currentPlaylist;
         set
@@ -200,13 +200,14 @@ public sealed partial class PlayerViewModel : ViewModelBase, IDisposable
                 if (ReferenceEquals(previousPlaylist, value))
                     return;
 
-                if (!SetField<PlaylistItem>(ref _currentPlaylist, value))
+                if (!SetField(ref _currentPlaylist, value))
                     return;
 
                 if (previousPlaylist is not null)
                     previousPlaylist.IsCurrent = false;
 
-                value.IsCurrent = true;
+                if (value is not null)
+                    value.IsCurrent = true;
             }
         }
     }
@@ -343,12 +344,19 @@ public sealed partial class PlayerViewModel : ViewModelBase, IDisposable
 
         // ################################################################
 
-        var data = _settings.Playlists.FirstOrDefault(p => p.Id == _settings.CurrentPlaylistId)
-            ?? _settings.Playlists.FirstOrDefault();
+        foreach (var playlistData in _settings.Playlists)
+        {
+            AddOrUpdatePlaylistItem(playlistData);
+            _ = LoadPlaylistThumbnailAsync(playlistData);
+        }
+
+        var data = _settings.CurrentPlaylistId is { } currentPlaylistId
+            ? _settings.Playlists.FirstOrDefault(p => p.Id == currentPlaylistId)
+            : null;
         if (data is not null)
             LoadPlaylist(data, startPlayback: false);
         else
-            Console.WriteLine("Configurations were not loaded!");
+            Console.WriteLine("No current playlist is configured.");
 
         Playlist.CollectionChanged += OnPlaylistChanged;   // Add, Move e Remove salvam sozinhos
     }
@@ -358,26 +366,21 @@ public sealed partial class PlayerViewModel : ViewModelBase, IDisposable
         if (!_loading) RequestSave();
     }
 
-    // TODO: esse método existe também em PlaylistDrawer, e é uma duplicata. Lá, ele é usado na criação de playlist, mas, aqui, é usado para carregar a playlist visualmente no drawer. Então preciso ver o que é necessário nesse código e o que não é. Por hora fica assim mesmo, pra fins de teste.
-    public async Task FillNewPlaylistAsync(string playlistName)
+    private PlaylistItem AddOrUpdatePlaylistItem(PlaylistData data)
     {
-        // Bitmap loadedThumb = await ThumbnailService.GetOrCreateAsync(Playlist[0].Path);
-
-        List<string> mediaPaths = new List<string>();
-
-        foreach (VideoItem item in Playlist)
+        var playlistItem = Playlists.FirstOrDefault(item => item.Id == data.Id);
+        if (playlistItem is null)
         {
-            mediaPaths.Add(item.Path);
+            playlistItem = new PlaylistItem { Id = data.Id };
+            Playlists.Add(playlistItem);
         }
 
-        Playlists.Add(
-            new PlaylistItem
-            {
-                Title = playlistName,
-                MediaPaths = mediaPaths,
-                Thumbnail = CurrentPlaylistThumbnail
-            });
+        playlistItem.Title = data.Name;
+        playlistItem.MediaPaths = data.Items.Select(item => item.Path).ToList();
+        if (data.Thumbnail is not null)
+            playlistItem.Thumbnail = data.Thumbnail;
 
+        return playlistItem;
     }
 
     public void LoadPlaylist(PlaylistData data, bool startPlayback = true)
@@ -419,10 +422,9 @@ public sealed partial class PlayerViewModel : ViewModelBase, IDisposable
             CurrentFile = currentItem;
             data.CurrentItemId = currentItem?.Id;
 
+            CurrentPlaylist = AddOrUpdatePlaylistItem(data);
             CurrentPlaylistThumbnail = data.Thumbnail;
 
-            // carrega as playlists no drawer de playlists
-            FillNewPlaylistAsync(data.Name);
         }
         finally
         {
@@ -433,6 +435,109 @@ public sealed partial class PlayerViewModel : ViewModelBase, IDisposable
         }
 
         _ = LoadThumbnailsAsync(Playlist.Where(v => !v.IsMissing).ToList(), data);
+        FlushSave();
+    }
+
+    public void LoadPlaylist(PlaylistItem playlist, bool startPlayback = true)
+    {
+        var data = _settings.Playlists.FirstOrDefault(savedPlaylist => savedPlaylist.Id == playlist.Id);
+        if (data is null)
+        {
+            data = new PlaylistData
+            {
+                Id = playlist.Id,
+                Name = playlist.Title,
+                Items = playlist.MediaPaths.Select(path => new ItemData
+                {
+                    Path = path,
+                    Title = System.IO.Path.GetFileNameWithoutExtension(path)
+                }).ToList(),
+                Thumbnail = playlist.Thumbnail
+            };
+
+            if (data.Items.Count > 0)
+                data.CurrentItemId = data.Items[0].Id;
+
+            _settings.Playlists.Add(data);
+        }
+
+        LoadPlaylist(data, startPlayback);
+    }
+
+    public void CreatePlaylistFromCurrent(string name)
+    {
+        var currentItemIndex = CurrentFile is null ? -1 : Playlist.IndexOf(CurrentFile);
+        var data = new PlaylistData
+        {
+            Name = name,
+            Items = Playlist.Select(item => new ItemData
+            {
+                Path = item.Path,
+                Title = item.Title
+            }).ToList(),
+            Thumbnail = CurrentPlaylistThumbnail
+        };
+        if (currentItemIndex >= 0 && currentItemIndex < data.Items.Count)
+            data.CurrentItemId = data.Items[currentItemIndex].Id;
+
+        _settings.Playlists.Add(data);
+        _settings.CurrentPlaylistId = data.Id;
+        _current = data;
+        CurrentPlaylist = AddOrUpdatePlaylistItem(data);
+        FlushSave();
+    }
+
+    public void LoadMediaFiles(IEnumerable<VideoItem> items)
+    {
+        _loading = true;
+        try
+        {
+            _current = null;
+            _settings.CurrentPlaylistId = null;
+            CurrentPlaylist = null;
+            CurrentPlaylistThumbnail = null;
+            Playlist.Clear();
+
+            foreach (var item in items)
+                Playlist.Add(item);
+
+            CurrentFile = Playlist.FirstOrDefault();
+        }
+        finally
+        {
+            _loading = false;
+        }
+
+        if (CurrentFile is not null)
+            Play(CurrentFile);
+
+        FlushSave();
+    }
+
+    private async Task LoadPlaylistThumbnailAsync(PlaylistData data)
+    {
+        if (data.Thumbnail is not null)
+            return;
+
+        foreach (var item in data.Items)
+        {
+            if (!File.Exists(item.Path))
+                continue;
+
+            var thumbnail = await ThumbnailService.GetOrCreateAsync(item.Path);
+            if (thumbnail is null)
+                continue;
+
+            data.Thumbnail = thumbnail;
+            var playlistItem = Playlists.FirstOrDefault(item => item.Id == data.Id);
+            if (playlistItem is not null)
+                playlistItem.Thumbnail = thumbnail;
+
+            if (ReferenceEquals(_current, data))
+                CurrentPlaylistThumbnail = thumbnail;
+
+            return;
+        }
     }
 
     // pra carregar as thumbs dos vídeos quando uma playlist for carregada:
@@ -445,22 +550,18 @@ public sealed partial class PlayerViewModel : ViewModelBase, IDisposable
         {
             data.Thumbnail = items.Select(item => item.Thumbnail).FirstOrDefault(thumbnail => thumbnail is not null);
             CurrentPlaylistThumbnail = data.Thumbnail;
+            var playlistItem = Playlists.FirstOrDefault(item => item.Id == data.Id);
+            if (playlistItem is not null)
+                playlistItem.Thumbnail = data.Thumbnail;
         }
-    }
-
-    // cria a playlist "padrão" só quando o usuário adiciona o primeiro vídeo
-    private void EnsureCurrent()
-    {
-        if (_current is not null) return;
-        _current = new PlaylistData { Name = "Minha playlist" };
-        _settings.Playlists.Add(_current);
-        _settings.CurrentPlaylistId = _current.Id;
     }
 
     private void SyncToSettings()
     {
-        EnsureCurrent();
-        _current!.Items = Playlist
+        if (_current is null)
+            return;
+
+        _current.Items = Playlist
             .Select(v => new ItemData { Id = v.Id, Path = v.Path, Title = v.Title })
             .ToList();
         _current.CurrentItemId = CurrentFile?.Id;
@@ -501,22 +602,47 @@ public sealed partial class PlayerViewModel : ViewModelBase, IDisposable
     // chamado a cada ~5s a partir do timer do player, e ao trocar de mídia
     public void UpdateProgress(long positionMs)
     {
-        EnsureCurrent();
-        _current!.CurrentItemId = CurrentFile?.Id;
+        if (_current is null)
+            return;
+
+        _current.CurrentItemId = CurrentFile?.Id;
         _current.PositionMs = CurrentFile is null ? 0 : Math.Max(0, positionMs);
         RequestSave();
     }
 
     public async Task<PlaylistData> ImportPlaylist(string name, IEnumerable<M3u8Playlist.Entry> entries)
     {
+        var items = entries.Select(e => new ItemData
+        {
+            Path = e.Path,
+            Title = e.Title ?? System.IO.Path.GetFileNameWithoutExtension(e.Path)
+        }).ToList();
+        var paths = items.Select(item => item.Path).ToList();
+
+        var existingData = _settings.Playlists.FirstOrDefault(playlist =>
+            HaveSameMediaPaths(playlist.Items.Select(item => item.Path), paths));
+        if (existingData is not null)
+        {
+            LoadPlaylist(existingData);
+            return existingData;
+        }
+
+        var existingDrawerItem = Playlists.FirstOrDefault(playlist =>
+            HaveSameMediaPaths(playlist.MediaPaths, paths));
+
+        if (existingDrawerItem is not null &&
+            _settings.Playlists.FirstOrDefault(playlist => playlist.Id == existingDrawerItem.Id) is { } existingById)
+        {
+            LoadPlaylist(existingById);
+            return existingById;
+        }
+
         var data = new PlaylistData
         {
+            Id = existingDrawerItem?.Id ?? Guid.NewGuid(),
             Name = name,
-            Items = entries.Select(e => new ItemData
-            {
-                Path = e.Path,
-                Title = e.Title ?? System.IO.Path.GetFileNameWithoutExtension(e.Path)
-            }).ToList(),
+            Items = items,
+            Thumbnail = existingDrawerItem?.Thumbnail,
         };
 
         data.CurrentItemId = data.Items.FirstOrDefault()?.Id;
@@ -525,9 +651,11 @@ public sealed partial class PlayerViewModel : ViewModelBase, IDisposable
 
         _settings.Playlists.Add(data);
         LoadPlaylist(data);
-        RequestSave();
         return data;
     }
+
+    private static bool HaveSameMediaPaths(IEnumerable<string> first, IReadOnlyList<string> second) =>
+        first.SequenceEqual(second, StringComparer.OrdinalIgnoreCase);
 
     public IEnumerable<ItemData> CurrentItems() =>
     Playlist.Select(v => new ItemData { Id = v.Id, Path = v.Path, Title = v.Title });

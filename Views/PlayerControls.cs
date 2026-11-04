@@ -44,17 +44,14 @@ public partial class PlayerControls : UserControl
 
             var novos = new List<VideoItem>(); // lista que será iterada para gerar as thumbnails
 
-            vm.Playlist.Clear(); // zera a playlista toda vez que o usuário abrir o modal de seleção de vídeo.
             foreach (var file in files)
             {
                 // var item = new VideoItem { Title = file.Name, Path = file.Path.ToString() };
                 var item = new VideoItem { Title = file.Name, Path = file.Path.LocalPath };
-                vm.Playlist.Add(item);
                 novos.Add(item);
             }
 
-            vm.CurrentFile = vm.Playlist[0];
-            vm.Play(vm.CurrentFile);
+            vm.LoadMediaFiles(novos);
 
             // miniaturas: uma por vez, aparecem conforme ficam prontas
             foreach (var item in novos)

@@ -35,7 +35,7 @@ public partial class PlaylistDrawer : UserControl
 
     private PlayerViewModel? Vm => DataContext as PlayerViewModel;
 
-    private async void PlayPlaylist(object? sender, RoutedEventArgs e)
+    private void PlayPlaylist(object? sender, RoutedEventArgs e)
     {
         if (sender is not Control { DataContext: PlaylistItem playlist } ||
             Vm is not { } vm)
@@ -47,20 +47,7 @@ public partial class PlaylistDrawer : UserControl
             return;
         }
 
-        vm.CurrentPlaylist = playlist;
-        vm.Playlist.Clear();
-        foreach (var path in playlist.MediaPaths)
-        {
-            vm.Playlist.Add(new VideoItem
-            {
-                Title = System.IO.Path.GetFileName(path),
-                Path = path,
-                Thumbnail = await ThumbnailService.GetOrCreateAsync(path)
-            });
-        }
-
-        vm.CurrentFile = vm.Playlist[0];
-        vm.Play(vm.CurrentFile);
+        vm.LoadPlaylist(playlist);
         vm.IsMouseDragging = false;
     }
 
@@ -144,9 +131,7 @@ public partial class PlaylistDrawer : UserControl
 
         if (isClick && playlistToPlay is not null && Vm is { } vm)
         {
-            vm.CurrentPlaylist = playlistToPlay;
-            // uma vez clicado numa playlist, começa a executar o primeiro vídeo dela, mas, antes disso, deve ser carregada propriamente. Este Play abaixo é só um teste.
-            // vm.Play(playlistToPlay[0]); 
+            vm.LoadPlaylist(playlistToPlay, startPlayback: false);
             vm.IsMouseDragging = false;
         }
     }
@@ -248,65 +233,19 @@ public partial class PlaylistDrawer : UserControl
         target.RenderTransform = null;   // pra limpar o deslocamento inicial quando terminar a animação
     }
 
-    public void FillNewPlaylist(string playlistName)
+    private void LoadPlaylist(object? sender, RoutedEventArgs e) =>
+        ImportarPlaylist(sender, e);
+
+    private void AddPlaylist(object? sender, RoutedEventArgs e)
     {
-        List<string> mediaPaths = new List<string>();
+        if (Vm?.Playlist.Count is not > 0)
+            return;
 
-        foreach (VideoItem item in Vm.Playlist)
-        {
-            mediaPaths.Add(item.Path);
-        }
-
-        Vm.Playlists.Add(
-            new PlaylistItem
-            {
-                Title = playlistName,
-                MediaPaths = mediaPaths,
-                Thumbnail = Vm.CurrentPlaylistThumbnail
-            });
-
+        ExportarPlaylist(sender, e);
     }
 
-    // public void LoadPlaylist(object? sender, RoutedEventArgs e)
-    // {
-    //     ImportarPlaylist(sender, e);
-    // }
-
-    // public void AddPlaylist(object? sender, RoutedEventArgs e)
-    // {
-    //     AddPlaylistAsync(sender, e);
-    // }
-
-    // public void DeletePlaylist(object? sender, RoutedEventArgs e)
-    // {
-    //     DeletePlaylistAsync();
-    // }
-    private async Task AddPlaylistAsync(object? invoker, RoutedEventArgs e)
-    {
-        if (Vm.Playlist.Count == 0) return;
-
-        ExportarPlaylist(invoker, e);  // chama tela de diálogo para selecionar o lugar para onde salvar a playlist.
-
-        // var dialog = new Dialog("Digite o nome do novo item:", modoAdicionar: true);
-        // dialog.DataContext = DataContext;
-
-        // var window = TopLevel.GetTopLevel(this) as Window;
-
-        // bool? resultado = await dialog.ShowDialog<bool?>(window);
-
-        // if (resultado == true)
-        // {
-
-        //     FillNewPlaylist();
-        //     Debug.WriteLine($"Method Invoked by: {invoker}\nAdded a new playlist!\n");
-        //     Debug.WriteLine($"Playlist's name: {Vm.Playlists.Last().Title}");
-        //     Debug.WriteLine("Playlist's paths:");
-        //     foreach (string path in Vm.Playlists.Last().MediaPaths)
-        //     {
-        //         Debug.WriteLine($"Path - {path}");
-        //     }
-        // }
-    }
+    private async void DeletePlaylist(object? sender, RoutedEventArgs e) =>
+        await DeletePlaylistAsync();
 
     private async Task DeletePlaylistAsync()
     {
@@ -344,7 +283,7 @@ public partial class PlaylistDrawer : UserControl
             if (file?.TryGetLocalPath() is { } path)
             {
                 M3u8Playlist.Save(path, vm.CurrentItems());
-                FillNewPlaylist(System.IO.Path.GetFileNameWithoutExtension(file.Name));
+                vm.CreatePlaylistFromCurrent(System.IO.Path.GetFileNameWithoutExtension(file.Name));
             }
 
         }
@@ -373,7 +312,7 @@ public partial class PlaylistDrawer : UserControl
                 return;
 
             var entries = M3u8Playlist.Load(path);
-            vm.ImportPlaylist(System.IO.Path.GetFileNameWithoutExtension(path), entries);
+            await vm.ImportPlaylist(System.IO.Path.GetFileNameWithoutExtension(path), entries);
         }
         catch (Exception ex) { Debug.WriteLine(ex); }
     }
