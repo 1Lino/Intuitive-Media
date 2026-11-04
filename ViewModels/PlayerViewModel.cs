@@ -39,9 +39,9 @@ public sealed partial class PlayerViewModel : ViewModelBase, IDisposable
     private bool _loop = false;
     private bool _shuffle = false;
     private bool _isPlaylistEnd = false;
-    private VideoItem _currentFile;
+    private VideoItem? _currentFile;
     private PlaylistItem _currentPlaylist;
-    private Bitmap _currentPlaylistThumbnail;
+    private Bitmap? _currentPlaylistThumbnail;
     private PlaybackState _state;
     private TimeSpan _position;
     private TimeSpan _duration;
@@ -160,13 +160,13 @@ public sealed partial class PlayerViewModel : ViewModelBase, IDisposable
         set => SetField(ref _isPlaylistEnd, value);
     }
 
-    public Bitmap CurrentPlaylistThumbnail
+    public Bitmap? CurrentPlaylistThumbnail
     {
         get => _currentPlaylistThumbnail;
         set => SetField(ref _currentPlaylistThumbnail, value);
     }
 
-    public VideoItem CurrentFile
+    public VideoItem? CurrentFile
     {
         get => _currentFile;
         set
@@ -175,7 +175,7 @@ public sealed partial class PlayerViewModel : ViewModelBase, IDisposable
             if (ReferenceEquals(previousFile, value))
                 return;
 
-            if (!SetField<VideoItem>(ref _currentFile, value))
+            if (!SetField(ref _currentFile, value))
                 return;
 
             // Atualiza a propriedade IsCurrent do vídeo anterior para "false"
@@ -185,7 +185,8 @@ public sealed partial class PlayerViewModel : ViewModelBase, IDisposable
             // e atualiza a mesma propriedade para o vídeo atual para "true"
             // de modo que tal propriedade possa ser lida pela interface, para
             // então aplicar comportamentos/estilos de acordo com estes valores.
-            value.IsCurrent = true;
+            if (value is not null)
+                value.IsCurrent = true;
         }
     }
 
@@ -302,12 +303,14 @@ public sealed partial class PlayerViewModel : ViewModelBase, IDisposable
     // A View faz o cast; o ViewModel permanece agnóstico ao tipo real.
     public object? NativePlayerHandle => _player.NativePlayerHandle;
 
-    public void Play(VideoItem video)
+    public void Play(VideoItem? video)
     {
-        Console.WriteLine(video != null);
+        if (video is not { } currentVideo)
+            return;
+
         Position = TimeSpan.Zero;
         Duration = TimeSpan.Zero;
-        _player.Play(new Uri(video.Path));
+        _player.Play(new Uri(currentVideo.Path));
     }
 
     public void Pause() => _player.Pause();
@@ -328,9 +331,24 @@ public sealed partial class PlayerViewModel : ViewModelBase, IDisposable
     {
         _settings = SettingsStore.Load();
 
-        var data = _settings.Playlists.FirstOrDefault(p => p.Id == _settings.CurrentPlaylistId);
+        // ############################ TESTES ###########################
+        Console.WriteLine("######### PlayerViewModel.Initialize debug #########");
+        Console.WriteLine($"App Version: {_settings.Version}");
+        Console.WriteLine($"Playlists loaded:");
+        foreach (var playlist in _settings.Playlists)
+        {
+            Console.WriteLine($"ID: {playlist.Id} | Name: {playlist.Name}");
+        }
+        Console.WriteLine($"Current Playlist ID: {_settings.CurrentPlaylistId}");
+
+        // ################################################################
+
+        var data = _settings.Playlists.FirstOrDefault(p => p.Id == _settings.CurrentPlaylistId)
+            ?? _settings.Playlists.FirstOrDefault();
         if (data is not null)
-            LoadPlaylist(data);
+            LoadPlaylist(data, startPlayback: false);
+        else
+            Console.WriteLine("Configurations were not loaded!");
 
         Playlist.CollectionChanged += OnPlaylistChanged;   // Add, Move e Remove salvam sozinhos
     }
@@ -362,7 +380,7 @@ public sealed partial class PlayerViewModel : ViewModelBase, IDisposable
 
     }
 
-    public void LoadPlaylist(PlaylistData data)
+    public void LoadPlaylist(PlaylistData data, bool startPlayback = true)
     {
         _loading = true;
         try
@@ -372,6 +390,7 @@ public sealed partial class PlayerViewModel : ViewModelBase, IDisposable
 
             Playlist.Clear();
 
+            Console.WriteLine("########## LoadPlaylist debug ###########");
             // carrega os vídeos da playlist no drawer
             foreach (var i in data.Items)
             {
@@ -382,32 +401,51 @@ public sealed partial class PlayerViewModel : ViewModelBase, IDisposable
                     Path = i.Path,
                     IsMissing = !File.Exists(i.Path)
                 });
+
+                Console.WriteLine($"Video Title: {i.Title} | Video Id: {i.Id}");
+            }
+            Console.WriteLine($"Playlist Current Item id: {data.CurrentItemId}");
+
+            var currentItem = data.CurrentItemId is { } currentItemId
+                ? Playlist.FirstOrDefault(v => v.Id == currentItemId)
+                : null;
+
+            if (currentItem is null)
+            {
+                currentItem = Playlist.FirstOrDefault(v => !v.IsMissing) ?? Playlist.FirstOrDefault();
+                data.PositionMs = 0;
             }
 
-            // TODO: é necessário fazer com que a linha comentada logo mais abaixo funcione, isto é, CurrentFile, que é o vídeo atual que deve ser executado pelo player, deve ser o do vídeo salvo pela playlist quando o usuário saiu.
-            CurrentFile = Playlist.First(); // essa funciona
-            // CurrentFile = Playlist.FirstOrDefault(v => v.Id == data.CurrentItemId); // essa retorna nullException
+            CurrentFile = currentItem;
+            data.CurrentItemId = currentItem?.Id;
 
             CurrentPlaylistThumbnail = data.Thumbnail;
 
-            // carrega a playlist no drawer de playlists
+            // carrega as playlists no drawer de playlists
             FillNewPlaylistAsync(data.Name);
         }
         finally
         {
             _loading = false;
             Console.WriteLine(CurrentFile is not null ? "Current file is not null" : "Current file is null");
-            Play(CurrentFile);
+            if (startPlayback)
+                Play(CurrentFile);
         }
 
-        _ = LoadThumbnailsAsync(Playlist.Where(v => !v.IsMissing).ToList());
+        _ = LoadThumbnailsAsync(Playlist.Where(v => !v.IsMissing).ToList(), data);
     }
 
     // pra carregar as thumbs dos vídeos quando uma playlist for carregada:
-    private static async Task LoadThumbnailsAsync(List<VideoItem> items)
+    private async Task LoadThumbnailsAsync(List<VideoItem> items, PlaylistData data)
     {
         foreach (var item in items)
             item.Thumbnail = await ThumbnailService.GetOrCreateAsync(item.Path);
+
+        if (ReferenceEquals(_current, data))
+        {
+            data.Thumbnail = items.Select(item => item.Thumbnail).FirstOrDefault(thumbnail => thumbnail is not null);
+            CurrentPlaylistThumbnail = data.Thumbnail;
+        }
     }
 
     // cria a playlist "padrão" só quando o usuário adiciona o primeiro vídeo
@@ -446,9 +484,21 @@ public sealed partial class PlayerViewModel : ViewModelBase, IDisposable
     {
         SyncToSettings();
         SettingsStore.Save(_settings);
+
+        // ############################ TESTES ###########################
+        Console.WriteLine("FlushSave debug");
+        Console.WriteLine($"App Version: {_settings.Version}");
+        Console.WriteLine($"Playlists saved:");
+        foreach (var playlist in _settings.Playlists)
+        {
+            Console.WriteLine($"ID: {playlist.Id} | Name: {playlist.Name}");
+        }
+        Console.WriteLine($"Current Playlist ID: {_settings.CurrentPlaylistId}");
+
+        // ################################################################
     }
 
-    // chame a cada ~5 s a partir do timer do seu player, e ao trocar de mídia
+    // chamado a cada ~5s a partir do timer do player, e ao trocar de mídia
     public void UpdateProgress(long positionMs)
     {
         EnsureCurrent();
@@ -467,8 +517,12 @@ public sealed partial class PlayerViewModel : ViewModelBase, IDisposable
                 Path = e.Path,
                 Title = e.Title ?? System.IO.Path.GetFileNameWithoutExtension(e.Path)
             }).ToList(),
-            Thumbnail = await ThumbnailService.GetOrCreateAsync(entries.First().Path)
         };
+
+        data.CurrentItemId = data.Items.FirstOrDefault()?.Id;
+        if (data.Items.FirstOrDefault() is { } firstItem)
+            data.Thumbnail = await ThumbnailService.GetOrCreateAsync(firstItem.Path);
+
         _settings.Playlists.Add(data);
         LoadPlaylist(data);
         RequestSave();
@@ -500,6 +554,9 @@ public sealed partial class PlayerViewModel : ViewModelBase, IDisposable
     // Este método verifica se o player está ou não no final da playlist, e executa comandos de acordo com estes casos.
     private void ReachedEndOfPlay()
     {
+        if (CurrentFile is null || Playlist.Count == 0)
+            return;
+
         int currentVideoIndex = Playlist.IndexOf(CurrentFile);
         int playlistLastIndex = Playlist.IndexOf(Playlist.Last());
 

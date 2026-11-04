@@ -102,32 +102,32 @@ public partial class PlayerControls : UserControl
     // TODO 2: É necessário observar o que acontece se o usuário mudar a ordem dos vídeos na playlist; 
     private void ProximaMidia(object? sender, RoutedEventArgs e)
     {
-        if (DataContext is PlayerViewModel vm)
-        {
-            int currentVideoIndex = vm.Playlist.IndexOf(vm.CurrentFile);
-            int playlistLastIndex = vm.Playlist.IndexOf(vm.Playlist.Last());
-            int nextVideoIndex = currentVideoIndex + 1 <= playlistLastIndex ? currentVideoIndex + 1 : currentVideoIndex;
+        if (DataContext is not PlayerViewModel vm || vm.Playlist.Count == 0)
+            return;
 
-            VideoItem nextVideo = vm.Playlist[nextVideoIndex];
-            vm.Play(nextVideo);
+        var currentVideoIndex = vm.CurrentFile is null ? 0 : vm.Playlist.IndexOf(vm.CurrentFile);
+        if (currentVideoIndex < 0)
+            currentVideoIndex = 0;
 
-            vm.CurrentFile = nextVideo;
-        }
+        var nextVideoIndex = Math.Min(currentVideoIndex + 1, vm.Playlist.Count - 1);
+        VideoItem nextVideo = vm.Playlist[nextVideoIndex];
+        vm.Play(nextVideo);
+        vm.CurrentFile = nextVideo;
     }
 
     private void MidiaAnterior(object? sender, RoutedEventArgs e)
     {
-        if (DataContext is PlayerViewModel vm)
-        {
-            int currentVideoIndex = vm.Playlist.IndexOf(vm.CurrentFile);
-            int playlistFirstIndex = vm.Playlist.IndexOf(vm.Playlist.First());
-            int previousVideoIndex = currentVideoIndex - 1 >= playlistFirstIndex ? currentVideoIndex - 1 : currentVideoIndex;
+        if (DataContext is not PlayerViewModel vm || vm.Playlist.Count == 0)
+            return;
 
-            VideoItem previousVideo = vm.Playlist[previousVideoIndex];
-            vm.Play(previousVideo);
+        var currentVideoIndex = vm.CurrentFile is null ? 0 : vm.Playlist.IndexOf(vm.CurrentFile);
+        if (currentVideoIndex < 0)
+            currentVideoIndex = 0;
 
-            vm.CurrentFile = previousVideo;
-        }
+        var previousVideoIndex = Math.Max(currentVideoIndex - 1, 0);
+        VideoItem previousVideo = vm.Playlist[previousVideoIndex];
+        vm.Play(previousVideo);
+        vm.CurrentFile = previousVideo;
     }
 
     private void OnMouseOver(object? sender, PointerEventArgs e)

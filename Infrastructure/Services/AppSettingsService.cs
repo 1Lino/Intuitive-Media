@@ -6,7 +6,8 @@ using System.Text.Json.Serialization;
 
 public static class SettingsStore
 {
-    // Esse path lê-se como: %LocalAppData%\IntuitiveMedia\settings.json
+    // Esse path lê-se como: %LocalAppData% -> IntuitiveMedia\settings.json
+    // Ou: Usuario\AppData\Local\IntuitiveMedia\settings.json
     private static readonly string FilePath = System.IO.Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
         "IntuitiveMedia", "settings.json");
@@ -19,17 +20,29 @@ public static class SettingsStore
 
     public static AppSettings Load()
     {
+        var sourcePath = File.Exists(FilePath) ? FilePath : FilePath + ".bad";
+        if (!File.Exists(sourcePath)) return new AppSettings();
+
         try
         {
-            // processo simples de carregamento
-            if (!File.Exists(FilePath)) return new AppSettings();
-            var s = JsonSerializer.Deserialize<AppSettings>(File.ReadAllText(FilePath), Options);
+            var s = JsonSerializer.Deserialize<AppSettings>(File.ReadAllText(sourcePath), Options);
             return Sanitize(s ?? new AppSettings());
         }
-        catch
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or JsonException or NotSupportedException)
         {
-            // arquivo corrompido: guarda cópia e recomeça do padrão
-            try { File.Move(FilePath, FilePath + ".bad", overwrite: true); } catch { }
+            Console.Error.WriteLine($"Não foi possível carregar as configurações em '{sourcePath}': {ex}");
+            if (sourcePath == FilePath)
+            {
+                try
+                {
+                    File.Move(FilePath, FilePath + ".bad", overwrite: true);
+                }
+                catch (Exception backupException) when (backupException is IOException or UnauthorizedAccessException)
+                {
+                    Console.Error.WriteLine($"Não foi possível preservar o arquivo de configurações inválido: {backupException}");
+                }
+            }
+
             return new AppSettings();
         }
     }

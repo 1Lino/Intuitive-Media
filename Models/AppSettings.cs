@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Avalonia.Media.Imaging;
+using System.Text.Json.Serialization;
 
 public enum RepeatMode { None, One, All }
 
@@ -26,7 +27,9 @@ public class PlaylistData
     public Guid Id { get; set; } = Guid.NewGuid();
     public string Name { get; set; } = "";
     public List<ItemData> Items { get; set; } = new();
-    public Bitmap Thumbnail { get; set; }
+    // thumbnail deve ser ignorada pelo json pois Bitmap trata-se de um tipo específico do Avalonia, que pode gerar erro.
+    [JsonIgnore]
+    public Bitmap? Thumbnail { get; set; }
     public Guid? CurrentItemId { get; set; }
     public long PositionMs { get; set; }
 }

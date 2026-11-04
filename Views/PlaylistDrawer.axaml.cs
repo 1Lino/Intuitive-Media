@@ -267,20 +267,20 @@ public partial class PlaylistDrawer : UserControl
 
     }
 
-    public void LoadPlaylist(object? sender, RoutedEventArgs e)
-    {
-        ImportarPlaylist(sender, e);
-    }
+    // public void LoadPlaylist(object? sender, RoutedEventArgs e)
+    // {
+    //     ImportarPlaylist(sender, e);
+    // }
 
-    public void AddPlaylist(object? sender, RoutedEventArgs e)
-    {
-        AddPlaylistAsync(sender, e);
-    }
+    // public void AddPlaylist(object? sender, RoutedEventArgs e)
+    // {
+    //     AddPlaylistAsync(sender, e);
+    // }
 
-    public void DeletePlaylist(object? sender, RoutedEventArgs e)
-    {
-        DeletePlaylistAsync();
-    }
+    // public void DeletePlaylist(object? sender, RoutedEventArgs e)
+    // {
+    //     DeletePlaylistAsync();
+    // }
     private async Task AddPlaylistAsync(object? invoker, RoutedEventArgs e)
     {
         if (Vm.Playlist.Count == 0) return;

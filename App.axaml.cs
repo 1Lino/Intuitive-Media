@@ -35,10 +35,15 @@ public partial class App : Application
             IMediaPlayerService playerService = new VlcMediaPlayerService(_vlcCore);
 
             var mainViewModel = new PlayerViewModel(playerService);
-            desktop.MainWindow = new MainWindow
+            var mainWindow = new MainWindow
             {
                 DataContext = mainViewModel,
             };
+            desktop.MainWindow = mainWindow;
+
+            mainViewModel.Initialize();
+            mainWindow.Opened += (_, _) => mainViewModel.Play(mainViewModel.CurrentFile);
+            mainWindow.Closing += (_, _) => mainViewModel.FlushSave();
 
             // quando a aplicação for finalizada, dá um dispose nos objetos MediaPlayer e LibVLC na memória pra evitar vazamento:
             desktop.ShutdownRequested += (sender, e) =>
