@@ -223,6 +223,7 @@
                                 <ToggleButton Classes="btn-volume"
                                               Width="50"
                                               Height="40"
+                                              IsChecked="{Binding IsMuted, Mode=OneWay}"
                                               Click="MutarMidia">
                                         <PathIcon />
                                 </ToggleButton>

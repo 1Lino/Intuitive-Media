@@ -38,6 +38,7 @@ public sealed partial class PlayerViewModel : ViewModelBase, IDisposable
     private bool _autoplay = true;
     private bool _loop = false;
     private bool _shuffle = false;
+    private bool _isMuted;
     private bool _isPlaylistEnd = false;
     private VideoItem? _currentFile;
     private PlaylistItem? _currentPlaylist;
@@ -66,6 +67,8 @@ public sealed partial class PlayerViewModel : ViewModelBase, IDisposable
     private PlaylistData? _current;
     private CancellationTokenSource? _saveCts;
     private bool _loading;
+    private bool _preferencesInitialized;
+    private bool _applyingPreferences;
 
     // Adiante tudo os que ficará exposto no para o resto do projeto:
 
@@ -77,51 +80,48 @@ public sealed partial class PlayerViewModel : ViewModelBase, IDisposable
         _player.DurationChanged += OnDurationChanged;
         _player.ErrorOccurred += OnErrorOccurred;
         _player.VolumeChanged += OnVolumeChanged;
-        _player.SetVolume(_volume);
     }
 
     public ICommand ToggleAutoRepeatOption => new RelayCommand(() =>
     {
-        AutoRepeat = !AutoRepeat;
-        AutoPlay = false; // pois autoplay não pode estar ativo ao mesmo tempo que autorepeat.
-        MediaOptions.autoRepeat = AutoRepeat ? "✓ Repeat" : "Repeat";
-        MediaOptions.autoPlay = "Autoplay";
-
-        IsMediaOptionsOn = false;
+        UpdatePreferences(() =>
+        {
+            AutoRepeat = !AutoRepeat;
+            AutoPlay = false;
+            IsMediaOptionsOn = false;
+        });
     });
 
     public ICommand ToggleAutoPlayOption => new RelayCommand(() =>
     {
-        AutoPlay = !AutoPlay;
-        AutoRepeat = false;
-        Shuffle = false;
-        MediaOptions.autoPlay = AutoPlay ? "✓ Autoplay" : "Autoplay";
-        MediaOptions.autoRepeat = "Repeat";
-        MediaOptions.shuffle = "Shuffle";
-
-        IsMediaOptionsOn = false;
+        UpdatePreferences(() =>
+        {
+            AutoPlay = !AutoPlay;
+            AutoRepeat = false;
+            Shuffle = false;
+            IsMediaOptionsOn = false;
+        });
     });
 
     public ICommand ToggleLoopOption => new RelayCommand(() =>
     {
-        Loop = !Loop;
-        Shuffle = false;
-        MediaOptions.loop = Loop ? "✓ Playlist Loop" : " Playlist Loop";
-        MediaOptions.shuffle = "Shuffle";
-
-        IsMediaOptionsOn = false;
+        UpdatePreferences(() =>
+        {
+            Loop = !Loop;
+            Shuffle = false;
+            IsMediaOptionsOn = false;
+        });
     });
 
     public ICommand ToggleShuffleOption => new RelayCommand(() =>
     {
-        Shuffle = !Shuffle;
-        Loop = false;
-        AutoPlay = false; // Pois "shuffle" já é um tipo de autoplay, só que randomizado. Pelo menos neste app.
-        MediaOptions.shuffle = Shuffle ? "✓ Shuffle" : "Shuffle";
-        MediaOptions.loop = "Playlist Loop";
-        MediaOptions.autoPlay = "AutoPlay";
-
-        IsMediaOptionsOn = false;
+        UpdatePreferences(() =>
+        {
+            Shuffle = !Shuffle;
+            Loop = false;
+            AutoPlay = false;
+            IsMediaOptionsOn = false;
+        });
     });
 
     public MediaOptions MediaOptions
@@ -133,25 +133,55 @@ public sealed partial class PlayerViewModel : ViewModelBase, IDisposable
     public bool AutoRepeat
     {
         get => _autoRepeat;
-        set => SetField(ref _autoRepeat, value);
+        set
+        {
+            if (SetField(ref _autoRepeat, value))
+                OnPreferencesChanged();
+        }
     }
 
     public bool AutoPlay
     {
         get => _autoplay;
-        set => SetField(ref _autoplay, value);
+        set
+        {
+            if (SetField(ref _autoplay, value))
+                OnPreferencesChanged();
+        }
     }
 
     public bool Loop
     {
         get => _loop;
-        set => SetField(ref _loop, value);
+        set
+        {
+            if (SetField(ref _loop, value))
+                OnPreferencesChanged();
+        }
     }
 
     public bool Shuffle
     {
         get => _shuffle;
-        set => SetField(ref _shuffle, value);
+        set
+        {
+            if (SetField(ref _shuffle, value))
+                OnPreferencesChanged();
+        }
+    }
+
+    public bool IsMuted
+    {
+        get => _isMuted;
+        set
+        {
+            if (SetField(ref _isMuted, value))
+            {
+                if (!_applyingPreferences)
+                    _player.SetVolume(_isMuted ? 0 : _volume);
+                OnPreferencesChanged();
+            }
+        }
     }
 
     public bool IsPlaylistEnd
@@ -289,7 +319,11 @@ public sealed partial class PlayerViewModel : ViewModelBase, IDisposable
         {
             var volume = Math.Clamp(value, 0, 100);
             if (SetField(ref _volume, volume))
-                _player.SetVolume(volume);
+            {
+                if (!_applyingPreferences)
+                    _player.SetVolume(_isMuted ? 0 : volume);
+                OnPreferencesChanged();
+            }
         }
     }
 
@@ -331,6 +365,23 @@ public sealed partial class PlayerViewModel : ViewModelBase, IDisposable
     public void Initialize()
     {
         _settings = SettingsStore.Load();
+        _applyingPreferences = true;
+        try
+        {
+            AutoPlay = _settings.Preferences.Autoplay;
+            AutoRepeat = _settings.Preferences.RepeatMode == RepeatMode.One;
+            Loop = _settings.Preferences.RepeatMode == RepeatMode.All;
+            Shuffle = _settings.Preferences.Shuffle;
+            IsMuted = _settings.Preferences.Muted;
+            Volume = Math.Clamp(_settings.Preferences.Volume, 0, 100);
+            UpdateMediaOptionLabels();
+        }
+        finally
+        {
+            _applyingPreferences = false;
+            _preferencesInitialized = true;
+        }
+        _player.SetVolume(IsMuted ? 0 : Volume);
 
         // ############################ TESTES ###########################
         Console.WriteLine("######### PlayerViewModel.Initialize debug #########");
@@ -344,17 +395,19 @@ public sealed partial class PlayerViewModel : ViewModelBase, IDisposable
 
         // ################################################################
 
-        foreach (var playlistData in _settings.Playlists)
-        {
-            AddOrUpdatePlaylistItem(playlistData);
-            _ = LoadPlaylistThumbnailAsync(playlistData);
-        }
-
         var data = _settings.CurrentPlaylistId is { } currentPlaylistId
             ? _settings.Playlists.FirstOrDefault(p => p.Id == currentPlaylistId)
             : null;
+
+        foreach (var playlistData in _settings.Playlists)
+        {
+            AddOrUpdatePlaylistItem(playlistData);
+            if (!ReferenceEquals(playlistData, data))
+                _ = LoadPlaylistThumbnailAsync(playlistData);
+        }
+
         if (data is not null)
-            LoadPlaylist(data, startPlayback: false);
+            LoadPlaylist(data, startPlayback: false, saveSettings: false);
         else
             Console.WriteLine("No current playlist is configured.");
 
@@ -364,6 +417,36 @@ public sealed partial class PlayerViewModel : ViewModelBase, IDisposable
     private void OnPlaylistChanged(object? s, NotifyCollectionChangedEventArgs e)
     {
         if (!_loading) RequestSave();
+    }
+
+    private void OnPreferencesChanged()
+    {
+        if (_preferencesInitialized && !_applyingPreferences)
+            RequestSave();
+    }
+
+    private void UpdatePreferences(Action update)
+    {
+        _applyingPreferences = true;
+        try
+        {
+            update();
+            UpdateMediaOptionLabels();
+        }
+        finally
+        {
+            _applyingPreferences = false;
+        }
+
+        OnPreferencesChanged();
+    }
+
+    private void UpdateMediaOptionLabels()
+    {
+        MediaOptions.autoPlay = AutoPlay ? "✓ Autoplay" : "Autoplay";
+        MediaOptions.autoRepeat = AutoRepeat ? "✓ Repeat" : "Repeat";
+        MediaOptions.loop = Loop ? "✓ Playlist Loop" : "Playlist Loop";
+        MediaOptions.shuffle = Shuffle ? "✓ Shuffle" : "Shuffle";
     }
 
     private PlaylistItem AddOrUpdatePlaylistItem(PlaylistData data)
@@ -383,7 +466,10 @@ public sealed partial class PlayerViewModel : ViewModelBase, IDisposable
         return playlistItem;
     }
 
-    public void LoadPlaylist(PlaylistData data, bool startPlayback = true)
+    public void LoadPlaylist(
+        PlaylistData data,
+        bool startPlayback = true,
+        bool saveSettings = true)
     {
         _loading = true;
         try
@@ -435,10 +521,14 @@ public sealed partial class PlayerViewModel : ViewModelBase, IDisposable
         }
 
         _ = LoadThumbnailsAsync(Playlist.Where(v => !v.IsMissing).ToList(), data);
-        FlushSave();
+        if (saveSettings)
+            FlushSave();
     }
 
-    public void LoadPlaylist(PlaylistItem playlist, bool startPlayback = true)
+    public void LoadPlaylist(
+        PlaylistItem playlist,
+        bool startPlayback = true,
+        bool saveSettings = true)
     {
         var data = _settings.Playlists.FirstOrDefault(savedPlaylist => savedPlaylist.Id == playlist.Id);
         if (data is null)
@@ -461,7 +551,7 @@ public sealed partial class PlayerViewModel : ViewModelBase, IDisposable
             _settings.Playlists.Add(data);
         }
 
-        LoadPlaylist(data, startPlayback);
+        LoadPlaylist(data, startPlayback, saveSettings);
     }
 
     public void CreatePlaylistFromCurrent(string name)
@@ -584,6 +674,15 @@ public sealed partial class PlayerViewModel : ViewModelBase, IDisposable
     public void FlushSave()
     {
         SyncToSettings();
+        _settings.Preferences.Autoplay = AutoPlay;
+        _settings.Preferences.Shuffle = Shuffle;
+        _settings.Preferences.RepeatMode = AutoRepeat
+            ? RepeatMode.One
+            : Loop
+                ? RepeatMode.All
+                : RepeatMode.None;
+        _settings.Preferences.Volume = _volume;
+        _settings.Preferences.Muted = IsMuted;
         SettingsStore.Save(_settings);
 
         // ############################ TESTES ###########################
@@ -674,8 +773,11 @@ public sealed partial class PlayerViewModel : ViewModelBase, IDisposable
 
     private void OnDurationChanged(object? sender, TimeSpan duration) => Duration = duration;
 
-    private void OnVolumeChanged(object? sender, double volume) =>
-        SetField(ref _volume, Math.Clamp((int)volume, 0, 100), nameof(Volume));
+    private void OnVolumeChanged(object? sender, double volume)
+    {
+        if (!IsMuted)
+            SetField(ref _volume, Math.Clamp((int)volume, 0, 100), nameof(Volume));
+    }
 
     private void OnErrorOccurred(object? sender, string message) => LastError = message;
 

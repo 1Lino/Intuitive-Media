@@ -16,8 +16,6 @@ namespace IntuitiveMedia.Views;
 // Todo UserControl precisa de uma classe
 public partial class PlayerControls : UserControl
 {
-    private bool isVolumeMuted = false;
-    int currentMediaVolume = 0;
     public PlayerControls()
     {
         InitializeComponent();
@@ -26,20 +24,7 @@ public partial class PlayerControls : UserControl
     private void MutarMidia(object? sender, RoutedEventArgs e)
     {
         if (DataContext is PlayerViewModel vm)
-        {
-            if (!isVolumeMuted)
-            {
-                currentMediaVolume = vm.Volume;
-                vm.Volume = 0;
-                isVolumeMuted = true;
-            }
-            else
-            {
-                vm.Volume = currentMediaVolume;
-                isVolumeMuted = false;
-            }
-
-        }
+            vm.IsMuted = !vm.IsMuted;
     }
 
     private async void CarregarMidia(object? sender, RoutedEventArgs e)

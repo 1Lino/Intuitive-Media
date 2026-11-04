@@ -1,4 +1,5 @@
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -264,38 +265,43 @@ public static class ThumbnailService
     private static double Score(byte[] px)
     {
         var n = W * H;
-        var luma = new double[n];
-        double sum = 0, sum2 = 0;
-
-        for (int i = 0, p = 0; i < px.Length; i += 4, p++)
+        var luma = ArrayPool<double>.Shared.Rent(n);
+        try
         {
-            var l = 0.299 * px[i + 2] + 0.587 * px[i + 1] + 0.114 * px[i];
-            luma[p] = l;
-            sum += l;
-            sum2 += l * l;
-        }
+            double sum = 0, sum2 = 0;
 
-        var mean = sum / n;
-        var std = Math.Sqrt(Math.Max(0, sum2 / n - mean * mean));
-
-        // força média das bordas (gradiente horizontal + vertical)
-        double edge = 0;
-        var count = 0;
-        for (var y = 1; y < H - 1; y++)
-        {
-            for (var x = 1; x < W - 1; x++)
+            for (int i = 0, p = 0; i < px.Length; i += 4, p++)
             {
-                var gx = luma[y * W + x + 1] - luma[y * W + x - 1];
-                var gy = luma[(y + 1) * W + x] - luma[(y - 1) * W + x];
-                edge += Math.Abs(gx) + Math.Abs(gy);
-                count++;
+                var l = 0.299 * px[i + 2] + 0.587 * px[i + 1] + 0.114 * px[i];
+                luma[p] = l;
+                sum += l;
+                sum2 += l * l;
             }
+
+            var mean = sum / n;
+            var std = Math.Sqrt(Math.Max(0, sum2 / n - mean * mean));
+
+            double edge = 0;
+            var count = 0;
+            for (var y = 1; y < H - 1; y++)
+            {
+                for (var x = 1; x < W - 1; x++)
+                {
+                    var gx = luma[y * W + x + 1] - luma[y * W + x - 1];
+                    var gy = luma[(y + 1) * W + x] - luma[(y - 1) * W + x];
+                    edge += Math.Abs(gx) + Math.Abs(gy);
+                    count++;
+                }
+            }
+            edge /= count;
+
+            var penalty = (mean < 15 || mean > 240) ? 0.3 : 1.0;
+
+            return (std * 0.5 + edge * 2) * penalty;
         }
-        edge /= count;
-
-        // penaliza só frames completamente pretos ou estourados
-        var penalty = (mean < 15 || mean > 240) ? 0.3 : 1.0;
-
-        return (std * 0.5 + edge * 2) * penalty;
+        finally
+        {
+            ArrayPool<double>.Shared.Return(luma);
+        }
     }
 }
