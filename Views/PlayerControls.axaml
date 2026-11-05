@@ -36,11 +36,12 @@
                         <Setter Property="Data" Value="M10 2a8 8 0 1 1 0 16a8 8 0 0 1 0-16M8.5 6.5A.5.5 0 0 0 8 7v6a.5.5 0 0 0 1 0V7a.5.5 0 0 0-.5-.5m3 0a.5.5 0 0 0-.5.5v6a.5.5 0 0 0 1 0V7a.5.5 0 0 0-.5-.5" />
                 </Style>
 
-                <Style Selector="ToggleButton.btn-play:checked PathIcon">
+                <!-- A classe paused acompanha o estado real do player via Biding de estado. -->
+                <Style Selector="ToggleButton.btn-play.paused PathIcon">
                         <Setter Property="Data" Value="M9.125 7.184A.75.75 0 0 0 8 7.834v4.333a.75.75 0 0 0 1.125.65l4.125-2.384a.5.5 0 0 0 0-.866zM2 10a8 8 0 1 1 16 0a8 8 0 0 1-16 0m8-7a7 7 0 1 0 0 14a7 7 0 0 0 0-14" />
                 </Style>
 
-                <Style Selector="ToggleButton.btn-play:checked:pointerover PathIcon">
+                <Style Selector="ToggleButton.btn-play.paused:pointerover PathIcon">
                         <Setter Property="Data" Value="M2 10a8 8 0 1 1 16 0a8 8 0 0 1-16 0m6-2.167v4.334a.75.75 0 0 0 1.125.65l4.125-2.384a.5.5 0 0 0 0-.866L9.125 7.184A.75.75 0 0 0 8 7.834" />
                 </Style>
 
@@ -180,9 +181,11 @@
                                 </Button>
 
 
-                                <ToggleButton Classes="btn-play"
+                                <ToggleButton x:Name="btnPlay" Classes="btn-play"
                                               Width="60"
                                               Height="45"
+                                              IsChecked="{Binding IsPaused, Mode=OneWay}"
+                                              Classes.paused="{Binding IsPaused}"
                                               Click="PausarMidia">
                                         <PathIcon />
                                 </ToggleButton>

@@ -281,8 +281,14 @@ public sealed partial class PlayerViewModel : ViewModelBase, IDisposable
     public PlaybackState State
     {
         get => _state;
-        private set => SetField(ref _state, value);
+        private set
+        {
+            if (SetField(ref _state, value))
+                OnPropertyChanged(nameof(IsPaused));
+        }
     }
+
+    public bool IsPaused => State == PlaybackState.Paused;
 
     public TimeSpan Position
     {

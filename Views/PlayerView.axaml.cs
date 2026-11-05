@@ -11,6 +11,8 @@ namespace IntuitiveMedia.Views;
 public partial class PlayerView : UserControl
 {
     private readonly DispatcherTimer _hideTimer;
+    private WindowState _windowStateBeforeFullScreen = WindowState.Normal;
+
     public PlayerView()
     {
         InitializeComponent();
@@ -72,9 +74,18 @@ public partial class PlayerView : UserControl
             if (TopLevel.GetTopLevel(this) is not Window window) // puxa a window pelo TopLevel desse objeto e disponibiliza como variável local.
                 return;
 
-            // toggle básico:
-            window.WindowState = window.WindowState == WindowState.Normal ?
-            WindowState.FullScreen : WindowState.Normal;
+            if (window.WindowState == WindowState.FullScreen)
+            {
+                window.WindowState = _windowStateBeforeFullScreen;
+                // TODO: quando sair de fullscreen, alguns controles devem ser redimensionados aqui;
+            }
+            else if (window.WindowState is WindowState.Normal or WindowState.Maximized)
+            {
+                _windowStateBeforeFullScreen = window.WindowState;
+                window.WindowState = WindowState.FullScreen;
+
+                // TODO: quando for para fullscreen, alguns controles devem ser redimensionados aqui;
+            }
         }
     }
 

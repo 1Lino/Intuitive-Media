@@ -2,11 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Platform.Storage;
+using Avalonia.Styling;
 using IntuitiveMedia.Models;
 using IntuitiveMedia.Services;
 using IntuitiveMedia.ViewModels;
@@ -23,8 +23,12 @@ public partial class PlayerControls : UserControl
 
     private void MutarMidia(object? sender, RoutedEventArgs e)
     {
+
         if (DataContext is PlayerViewModel vm)
+        {
             vm.IsMuted = !vm.IsMuted;
+        }
+
     }
 
     private async void CarregarMidia(object? sender, RoutedEventArgs e)
@@ -97,7 +101,6 @@ public partial class PlayerControls : UserControl
                 vm.Pause();
             else
                 vm.Resume();
-
         }
     }
 
