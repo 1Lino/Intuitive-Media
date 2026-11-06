@@ -249,17 +249,19 @@ public partial class PlaylistDrawer : UserControl
 
     private async Task DeletePlaylistAsync()
     {
-        var dialog = new Dialog("Deseja realmente excluir este item?", modoAdicionar: false);
+        if (Vm is not { CurrentPlaylist: { } playlist } vm)
+            return;
 
-        var window = TopLevel.GetTopLevel(this) as Window;
+        var dialog = new Dialog(
+            $"Deseja remover a playlist '{playlist.Title}' do drawer? O arquivo não será excluído.",
+            modoAdicionar: false);
+
+        if (TopLevel.GetTopLevel(this) is not Window window)
+            return;
 
         bool? resultado = await dialog.ShowDialog<bool?>(window);
-
         if (resultado == true)
-        {
-            // TODO: aqui deve ser chamado o método de deletar playlist. Tal método é algo que deve vir do viewModel.
-            Debug.WriteLine("Deleted a playlist!");
-        }
+            vm.DeletePlaylist(playlist);
     }
 
     private async void ExportarPlaylist(object? sender, RoutedEventArgs e)

@@ -6,7 +6,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="using:IntuitiveMedia.Views"
         mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="450"
-        Width="600" Height="450"
+        Width="800" Height="500" MinWidth="600" MinHeight="450"
         x:Class="IntuitiveMedia.Views.MainWindow"
         x:DataType="vm:PlayerViewModel"
         Icon="/Assets/avalonia-logo.ico"

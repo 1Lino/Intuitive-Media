@@ -626,6 +626,26 @@ public sealed partial class PlayerViewModel : ViewModelBase, IDisposable
         FlushSave();
     }
 
+    public void DeletePlaylist(PlaylistItem playlist)
+    {
+        var playlistId = playlist.Id;
+        var isCurrentPlaylist = _current?.Id == playlistId ||
+                                _settings.CurrentPlaylistId == playlistId;
+
+        Playlists.Remove(playlist);
+        _settings.Playlists.RemoveAll(data => data.Id == playlistId);
+
+        if (isCurrentPlaylist)
+        {
+            _current = null;
+            _settings.CurrentPlaylistId = null;
+            CurrentPlaylist = null;
+            CurrentPlaylistThumbnail = null;
+        }
+
+        FlushSave();
+    }
+
     public void LoadMediaFiles(IEnumerable<VideoItem> items)
     {
         _loading = true;
