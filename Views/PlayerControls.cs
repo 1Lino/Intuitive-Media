@@ -1,12 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Platform.Storage;
-using Avalonia.Styling;
 using IntuitiveMedia.Models;
 using IntuitiveMedia.Services;
 using IntuitiveMedia.ViewModels;

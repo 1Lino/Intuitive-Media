@@ -66,7 +66,10 @@
                                                   DragDrop.DragLeave="Item_DragLeave"
                                                   DragDrop.Drop="Item_Drop">
                                                 <StackPanel Spacing="4" VerticalAlignment="Center">
-                                                      <TextBlock Text="{Binding Title}" HorizontalAlignment="Center" />
+                                                      <TextBlock Text="{Binding Title}"
+                                                                 ToolTip.Tip="{Binding Title}"
+                                                                 HorizontalAlignment="Center"
+                                                                 MaxWidth="100" />
                                                       <Border Width="100" Height="60" Background="Gray" CornerRadius="4"
                                                               ClipToBounds="True">
                                                             <Image Source="{Binding Thumbnail}" Stretch="UniformToFill" />

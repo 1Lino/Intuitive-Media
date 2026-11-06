@@ -8,6 +8,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using Avalonia.Controls;
 using Avalonia.Media.Imaging;
 using CommunityToolkit.Mvvm.Input;
 using IntuitiveMedia.Core;
@@ -34,6 +35,12 @@ public sealed partial class PlayerViewModel : ViewModelBase, IDisposable
     // do ViewModelBase, que basicamente faz o serviço de notificar ao binding da UI quando estas propriedades são mudadas.
     // O que fica exposto para a UI é o AreControlsVisible, por exemplo, enquanto que _areControlsVisible é interno. Só não funciona com listas, pois SetField não foi criado levando em conta listas, apenas valores individuais.
     private readonly IMediaPlayerService _player;
+    private WindowState _windowStateBeforeFullScreen = WindowState.Normal;
+    private int _playlistDrawerHeight = 200;
+    private int _playlistDrawerWidth = 180;
+    private int _mediaDrawerHeight = 150;
+    private int _mediaDrawerWidth = 400;
+    private int _playlistScrollHeight = 120;
     private bool _autoRepeat = false;
     private bool _autoplay = true;
     private bool _loop = false;
@@ -123,6 +130,42 @@ public sealed partial class PlayerViewModel : ViewModelBase, IDisposable
             IsMediaOptionsOn = false;
         });
     });
+
+    public WindowState WindowStateBeforeFullScreen
+    {
+        get => _windowStateBeforeFullScreen;
+        set => SetField(ref _windowStateBeforeFullScreen, value);
+    }
+
+    public int PlaylistDrawerHeight
+    {
+        get => _playlistDrawerHeight;
+        set => SetField(ref _playlistDrawerHeight, value);
+    }
+
+    public int PlaylistDrawerWidth
+    {
+        get => _playlistDrawerWidth;
+        set => SetField(ref _playlistDrawerWidth, value);
+    }
+
+    public int PLaylistScrollHeight
+    {
+        get => _playlistScrollHeight;
+        set => SetField(ref _playlistScrollHeight, value);
+    }
+
+    public int MediaDrawerHeight
+    {
+        get => _mediaDrawerHeight;
+        set => SetField(ref _mediaDrawerHeight, value);
+    }
+
+    public int MediaDrawerWidth
+    {
+        get => _mediaDrawerWidth;
+        set => SetField(ref _mediaDrawerWidth, value);
+    }
 
     public MediaOptions MediaOptions
     {
@@ -389,7 +432,7 @@ public sealed partial class PlayerViewModel : ViewModelBase, IDisposable
         }
         _player.SetVolume(IsMuted ? 0 : Volume);
 
-        // ############################ TESTES ###########################
+        // ############################ LOGS ###########################
         Console.WriteLine("######### PlayerViewModel.Initialize debug #########");
         Console.WriteLine($"App Version: {_settings.Version}");
         Console.WriteLine($"Playlists loaded:");
@@ -485,7 +528,7 @@ public sealed partial class PlayerViewModel : ViewModelBase, IDisposable
 
             Playlist.Clear();
 
-            Console.WriteLine("########## LoadPlaylist debug ###########");
+            Console.WriteLine("########## LoadPlaylist log ###########");
             // carrega os vídeos da playlist no drawer
             foreach (var i in data.Items)
             {
@@ -868,7 +911,7 @@ public sealed partial class PlayerViewModel : ViewModelBase, IDisposable
 
     }
 
-    // Algoritmo de permutação Fisher-Yates Shuffle (embaralhar), complexidade O(n), pra misturar os elementos da playlist. 
+    // NOTA: Algoritmo de permutação Fisher-Yates Shuffle (embaralhar), complexidade O(n), pra misturar os elementos da playlist. 
     // Este algoritmo é mais eficiente, neste caso, do que um simples Random (que normalmente possui algum viés, dependendo de como é implementado).
     public static void ShufflePlaylist<T>(ObservableCollection<T> list)
     {

@@ -11,7 +11,6 @@ namespace IntuitiveMedia.Views;
 public partial class PlayerView : UserControl
 {
     private readonly DispatcherTimer _hideTimer;
-    private WindowState _windowStateBeforeFullScreen = WindowState.Normal;
 
     public PlayerView()
     {
@@ -36,14 +35,7 @@ public partial class PlayerView : UserControl
 
             // poderia ser sender.Cursor, o que faria referência ao objeto que disparou o evento, aqui, no caso, ControlsOverlay.
             ControlsOverlay.Cursor = new Cursor(StandardCursorType.Arrow); // restaura cursor ao mover ponteiro.
-
-            // Console.WriteLine("Pointer moved over the window!");
-            // Console.WriteLine($"Should controls turn visible? {vm.AreControlsVisible}");
-            // Console.WriteLine($"Is pointer over a control? {vm.IsPointerOverControls}");
-
         }
-        // Console.WriteLine("DataContext is not PlayerViewModel");
-        // Console.WriteLine($"[PlayerView] DataContext mudou para: {DataContext?.GetType().FullName ?? "null"}");
 
         _hideTimer.Stop();
         _hideTimer.Start();
@@ -76,15 +68,18 @@ public partial class PlayerView : UserControl
 
             if (window.WindowState == WindowState.FullScreen)
             {
-                window.WindowState = _windowStateBeforeFullScreen;
-                // TODO: quando sair de fullscreen, alguns controles devem ser redimensionados aqui;
+                window.WindowState = vm.WindowStateBeforeFullScreen;
+
+                vm.PlaylistDrawerHeight = 200;
+                vm.PLaylistScrollHeight = 120;
             }
             else if (window.WindowState is WindowState.Normal or WindowState.Maximized)
             {
-                _windowStateBeforeFullScreen = window.WindowState;
+                vm.WindowStateBeforeFullScreen = window.WindowState;
                 window.WindowState = WindowState.FullScreen;
 
-                // TODO: quando for para fullscreen, alguns controles devem ser redimensionados aqui;
+                vm.PlaylistDrawerHeight = 400;
+                vm.PLaylistScrollHeight = 320;
             }
         }
     }
@@ -105,10 +100,8 @@ public partial class PlayerView : UserControl
                 vm.AreControlsVisible = false;
 
                 ControlsOverlay.Cursor = new Cursor(StandardCursorType.None); // faz o cursor sumir
-                // Console.WriteLine("Controls are now invisible");
                 return;
             }
-            // Console.WriteLine("Controls remain visible");
         }
     }
 
