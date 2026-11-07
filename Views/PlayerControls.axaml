@@ -10,7 +10,7 @@
         <!-- Configurações de estilo para os ícones dos botões. Basta copiar a propriedade d dos svgs da pasta assets e passá-los ao Value dos setters dos seletores abaixo -->
         <UserControl.Styles>
                 <!-- Define o cursor de todos os botões como "Hand"-->
-                <Style Selector="Button, ToggleButton, DropDownButton">
+                <Style Selector="Button, ToggleButton, DropDownButton, Slider">
                         <Setter Property="Cursor" Value="Hand" />
                 </Style>
 

@@ -2,71 +2,78 @@
 
 ## Visão geral
 
-Aplicativo desktop em C#/.NET 10 com Avalonia para a interface e LibVLCSharp para reprodução de mídia. A organização separa a interface, o estado apresentado à interface, o contrato do player e sua implementação baseada em VLC:
+Aplicativo desktop em C# com .NET 10 e Avalonia 12. A interface é organizada em controles Avalonia e usa bindings para um ViewModel; a reprodução é feita pelo LibVLCSharp 3. O projeto também inclui persistência local de preferências e playlists, importação/exportação M3U8 e geração/cache de miniaturas.
 
 ```text
 Program
-  -> App (inicialização e ciclo de vida)
-      -> MainWindow
+  -> App (inicialização)
+      -> VlcCoreInitializer
+      -> MainWindow (DataContext = PlayerViewModel)
           -> PlayerView
-              -> VideoView + menus e controles
+              -> VideoView + menus, drawers e controles
                   -> PlayerViewModel
                       -> IMediaPlayerService
                           -> VlcMediaPlayerService
                               -> LibVLC / MediaPlayer
 ```
 
-## Inicialização
+## Inicialização e composição
 
-1. `Program` configura e inicia o Avalonia.
-2. Em `App.OnFrameworkInitializationCompleted`, `VlcCoreInitializer` inicializa o núcleo nativo do VLC antes da criação do player.
-3. A aplicação cria `VlcMediaPlayerService` e o injeta em `PlayerViewModel`.
-4. A janela principal recebe esse `PlayerViewModel` como `DataContext`; `PlayerView` usa o mesmo contexto para seus controles.
-5. No encerramento, `App` descarta o núcleo LibVLC.
+1. `Program` inicia o Avalonia com detecção da plataforma, tema Fluent, fonte Inter e ferramentas de desenvolvimento em Debug.
+2. `App.OnFrameworkInitializationCompleted` cria e inicializa `VlcCoreInitializer` antes de criar o player.
+3. Para o ciclo de vida desktop, `App` instancia diretamente `VlcMediaPlayerService`, `PlayerViewModel` e `MainWindow`. O ViewModel é atribuído como `DataContext` da janela e inicializado.
+4. Ao abrir a janela, `PlayerViewModel.Play` é chamado para reproduzir o item atual, se houver.
+5. Ao fechar, a janela chama `FlushSave`; no encerramento do aplicativo, `App` descarta o núcleo LibVLC.
 
-O container de injeção de dependências é configurado em `App`, mas a janela e o ViewModel são construídos diretamente no código atual.
+Embora `App` monte um `ServiceCollection` com registros para `IMediaPlayerService` e `PlayerViewModel`, o provider não é usado para criar os objetos da janela. A composição em execução é manual.
 
-## Responsabilidades
+## Camadas e responsabilidades
 
-- **`Views/`**: define a janela, o vídeo, os controles e os handlers de interface. `PlayerView` conecta o handle nativo ao `VideoView` e cuida da visibilidade temporizada dos controles e do fullscreen.
-- **`ViewModels/PlayerViewModel`**: mantém estado observável para a interface (estado, posição, duração, volume, arquivo atual e visibilidade) e encaminha ações ao serviço. Não depende diretamente dos tipos do VLC.
-- **`Core/IMediaPlayerService`**: contrato de reprodução usado pelo ViewModel. Expõe comandos, estado, eventos e um handle opaco necessário para hospedar o vídeo.
-- **`Infrastructure/VLC/`**: inicializa LibVLC e implementa o contrato com `MediaPlayer`. Converte eventos do VLC para os estados da aplicação e despacha notificações para a thread da UI.
+- **`Views/`**: janela e controles Avalonia. `PlayerView` associa o handle nativo ao `VideoView`, implementa fullscreen por duplo clique e oculta os controles após inatividade. `PlayerControls`, `MediaDrawer` e `PlaylistDrawer` tratam interações de interface, seletores de arquivo, ordenação por arrastar e soltar e ações de playlist.
+- **`ViewModels/PlayerViewModel`**: estado observável da tela e lógica do player, da playlist atual, de playlists salvas, das preferências, do progresso e das miniaturas. Interage com a reprodução por `IMediaPlayerService`, sem usar tipos de LibVLCSharp diretamente.
+- **`Core/`**: contrato `IMediaPlayerService`, enum `PlaybackState` e argumentos de mudança de estado. O estado da aplicação não expõe o enum do VLC.
+- **`Infrastructure/VLC/`**: inicialização do núcleo LibVLC, implementação de `IMediaPlayerService` com `MediaPlayer` e serviço de geração/cache de miniaturas.
+- **`Infrastructure/Services/` e `Models/`**: leitura/escrita de configurações e dados das playlists, além da serialização de playlists no formato M3U8.
 
-## Fluxo de reprodução
+`MainViewModel` existe, mas é apenas um placeholder e não participa da composição atual. `ViewLocator` está registrado como template da aplicação, mas a janela principal usa uma view definida diretamente e não depende dele para ser criada.
 
-1. O botão **Load** abre o seletor de arquivos do Avalonia.
-2. O caminho selecionado é adicionado a `PlayList`, definido como `CurrentFile` e enviado a `PlayerViewModel.Play`.
-3. O ViewModel zera posição e duração e chama `IMediaPlayerService.Play`.
-4. `VlcMediaPlayerService` cria a mídia, inicia o `MediaPlayer` e descarta a mídia anterior.
-5. Eventos do VLC atualizam estado, posição, duração ou erro. O ViewModel atualiza suas propriedades e os bindings refletem os valores na interface.
-6. O slider de posição chama `Seek`; o slider de volume chama `SetVolume`. O botão Play pausa quando o estado é `Playing` e, nos demais estados, solicita retomada.
+## Reprodução e interface
 
-```text
-Controles -> PlayerViewModel -> IMediaPlayerService -> LibVLC
-Controles <- propriedades/eventos <- PlayerViewModel <- eventos VLC
-```
+`PlayerViewModel` assina os eventos de estado, posição, duração, volume e erro do serviço. Os eventos nativos do LibVLC são encaminhados de forma assíncrona à thread da UI com `Dispatcher.UIThread.Post`.
 
-## Estado e ciclo de vida
+- O seletor de mídia permite escolher vários arquivos. Eles substituem a lista atual, e o primeiro começa a tocar.
+- Clicar em um item no drawer de mídias seleciona e reproduz esse item. O drawer permite reordenar os vídeos por arrastar e soltar, com animação.
+- O botão de play/pausa, os controles anterior/próximo, o slider de posição e o controle de volume chamam operações do ViewModel/serviço.
+- O menu de opções oferece autoplay, repetição do item, loop da playlist e shuffle.
+- Os controles são exibidos ao mover o ponteiro sobre o vídeo e ocultados após três segundos, exceto quando o ponteiro está sobre controles, há um arraste em andamento ou o menu de opções está aberto.
+- O handle nativo é exposto pelo contrato como `object`; somente `PlayerView` faz o cast para associá-lo ao `VideoView`.
 
-`PlaybackState` pertence à aplicação (`Stopped`, `Opening`, `Playing`, `Paused`, `Ended`, `Error`) e evita expor o enum do VLC ao ViewModel. Os eventos nativos chegam de threads do VLC; o serviço usa `Dispatcher.UIThread.Post` para notificar a interface sem bloquear a thread nativa.
+O serviço troca a mídia atual ao iniciar outra reprodução, publica estado e erros e implementa play, pause, resume, stop, seek e volume. Ao ser descartado, interrompe o player e libera a mídia e o `MediaPlayer`.
 
-Ao trocar de arquivo, o serviço libera a mídia anterior. Ao descartar o serviço, a ordem é parar o player, descartar a mídia atual e descartar o `MediaPlayer`. O núcleo LibVLC é mantido pelo inicializador até o encerramento da aplicação.
+## Playlists, configurações e miniaturas
 
-## Estado atual e limites
+- `PlayerViewModel.Playlist` contém os vídeos da playlist ativa; `Playlists` contém os itens mostrados no drawer de playlists.
+- Clicar no item de uma playlist carrega seus itens sem iniciar reprodução. O botão de play sobre a miniatura carrega e inicia a playlist. As playlists podem ser reorganizadas com arrastar e soltar, criadas a partir da lista atual ou removidas.
+- `M3u8Playlist` lê entradas M3U8, resolve caminhos relativos a partir da pasta do arquivo e grava playlists com título e caminho de cada mídia. A interface oferece importação e exportação por seletores de arquivo.
+- `SettingsStore` serializa preferências e playlists em JSON em `%LocalAppData%\\IntuitiveMedia\\settings.json`. As preferências incluem volume, mute, autoplay, shuffle e modo de repetição. As playlists guardam seus itens, o item selecionado e uma posição em milissegundos. Alterações são salvas com debounce; algumas operações e o fechamento da janela fazem salvamento imediato.
+- `ThumbnailService` gera miniaturas com uma instância própria do LibVLC, limitada a uma captura por vez. O cache PNG fica em `%LocalAppData%\\IntuitiveMedia\\Thumbnails`; sua chave considera versão do cache, caminho, tamanho e data de modificação do arquivo.
 
-- `MainViewModel` existe, mas a janela em execução recebe `PlayerViewModel` diretamente.
-- O seletor aceita um arquivo por vez. Os controles **Prev** e **Next** ainda não têm handlers.
-- `MediaDrawer` apresenta itens estáticos de exemplo; ainda não reflete a playlist.
-- `AutoRepeat` e a lógica de fim de reprodução existem no ViewModel, mas a navegação de playlist está incompleta.
-- `ReachedEndOfPlay` contém dois blocos consecutivos para tratar o fim; com `IsPlaylistEnd` verdadeiro, pode solicitar `Stop` ou `Play` duas vezes.
-- Os registros de serviços no container de DI não são usados para criar a janela atual.
-- `PlayerViewModel.Dispose()` libera o serviço e remove os handlers, mas o encerramento atual da aplicação descarta apenas `VlcCoreInitializer`; o descarte do ViewModel não está conectado ao shutdown.
+## Limitações e pontos de atenção atuais
 
-## Onde procurar
+- `PlayerViewModel` concentra reprodução, preferências, playlists, persistência e carregamento de miniaturas; é o principal ponto de concentração de responsabilidades.
+- `MainViewModel` não é utilizado e o container de injeção de dependências também não participa da criação dos objetos em execução.
+- O serviço de player do ViewModel é descartado por `PlayerViewModel.Dispose`, mas esse descarte não está conectado ao encerramento atual. `App` descarta o núcleo LibVLC no shutdown, e a janela apenas salva as configurações ao fechar.
+- A inicialização restaura a playlist e o item selecionado, mas não aplica `PositionMs` para retomar do ponto salvo. `UpdateProgress` grava o progresso quando chamado, porém não há chamada a esse método conectada aos controles/timer atuais.
+- Abrir um arquivo diretamente pelo sistema e soltar arquivos sobre o aplicativo ainda não estão implementados. O drag-and-drop existente reorganiza itens dentro dos drawers.
+- `ReachedEndOfPlay` centraliza a navegação no fim da mídia, mas a lógica de avanço depende de `AutoPlay`; os demais modos e a navegação anterior/próxima devem ser verificados em conjunto antes de ampliar o comportamento de playlist.
+- Os estados de janela e dimensões dos drawers são gerenciados parcialmente em code-behind e no ViewModel.
 
-- Inicialização e composição da janela: `App.axaml.cs`
+## Arquivos de referência
+
+- Inicialização e janela: `Program.cs`, `App.axaml.cs`, `Views/MainWindow.axaml.cs`
 - Contrato e estados: `Core/IMediaPlayerService.cs`, `Core/PlaybackState.cs`
-- Integração VLC: `Infrastructure/VLC/VlcCoreInitializer.cs`, `Infrastructure/VLC/VlcMediaPlayerService.cs`
-- Estado e lógica de reprodução: `ViewModels/PlayerViewModel.cs`
-- Interface e handlers: `Views/PlayerView.axaml.cs`, `Views/PlayerControls.cs`
+- Player e preferências: `ViewModels/PlayerViewModel.cs`
+- Integração LibVLC: `Infrastructure/VLC/VlcCoreInitializer.cs`, `Infrastructure/VLC/VlcMediaPlayerService.cs`
+- Miniaturas: `Infrastructure/VLC/ThumbnailService.cs`
+- Persistência JSON e M3U8: `Infrastructure/Services/AppSettingsService.cs`, `Infrastructure/Services/SaveLoadPlaylist.cs`, `Models/AppSettings.cs`
+- Interface do player e playlists: `Views/PlayerView.axaml`, `Views/PlayerControls.axaml`, `Views/MediaDrawer.axaml`, `Views/PlaylistDrawer.axaml`
