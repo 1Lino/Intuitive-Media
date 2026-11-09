@@ -23,8 +23,13 @@
     <Grid>
         <!-- Nota: não pode haver espaços entre ':' e o nome do componente, do contrário resulta em erro -->
 
-        <!-- Player de video do VLC Media. O data-context deste componente deve ser definido explicitamente aqui, para evitar erro de tipo, pois em runtime o contexto MainViewModel será herdado por estes componentes -->
-        <local:PlayerView />
+        <!-- O DataContext do player é definido em App.axaml.cs após a janela abrir. -->
+        <local:PlayerView x:Name="PlayerViewControl" />
+        <TextBlock x:Name="StartupStatus"
+                   Text="Inicializando..."
+                   HorizontalAlignment="Center"
+                   VerticalAlignment="Center"
+                   IsVisible="True" />
 
     </Grid>
 

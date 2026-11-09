@@ -107,12 +107,15 @@ public partial class PlayerView : UserControl
 
     private void OnDataContextChanged(object? sender, System.EventArgs e)
     {
-        if (DataContext is PlayerViewModel vm)
-        {
-            // Cast isolado aqui se o handle nativo mudar de tipo algum dia,
-            // só este arquivo precisa mudar.
-            VideoViewControl.MediaPlayer = vm.NativePlayerHandle as MediaPlayer;
-        }
+        SetPlayerViewModel(DataContext as PlayerViewModel);
+    }
+
+    public void SetPlayerViewModel(PlayerViewModel? viewModel)
+    {
+        PlaylistMenuControl.DataContext = viewModel;
+        PlayerMediaMenuControl.DataContext = viewModel;
+        PlayerControlsControl.DataContext = viewModel;
+        VideoViewControl.MediaPlayer = viewModel?.NativePlayerHandle as MediaPlayer;
     }
 
     //END

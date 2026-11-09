@@ -8,7 +8,7 @@ using Avalonia.Media.Imaging;
 public class VideoItem : INotifyPropertyChanged
 {
     public Guid Id { get; set; } = Guid.NewGuid();
-    public bool IsMissing { get; set; }   // se o arquivo não existe mais (HD externo etc.)
+    private bool _isMissing;
     public string Title { get; set; } = "";
     public string Path { get; set; } = "";
     private bool _isCurrent;
@@ -41,6 +41,19 @@ public class VideoItem : INotifyPropertyChanged
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
+
+    public bool IsMissing
+    {
+        get => _isMissing;
+        set
+        {
+            if (_isMissing == value)
+                return;
+
+            _isMissing = value;
+            OnPropertyChanged();
+        }
+    }
 
     protected void OnPropertyChanged([CallerMemberName] string? propertyName = null)
     {

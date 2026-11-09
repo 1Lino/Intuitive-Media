@@ -34,4 +34,16 @@ public partial class MainWindow : Window
             }
         };
     }
+
+    public void SetStartupStatus(string? message)
+    {
+        StartupStatus.Text = message;
+        StartupStatus.IsVisible = message is not null;
+    }
+
+    public void SetPlayerViewModel(PlayerViewModel viewModel)
+    {
+        DataContext = viewModel;
+        PlayerViewControl.SetPlayerViewModel(viewModel);
+    }
 }

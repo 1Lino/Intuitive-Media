@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using System.Windows.Input;
 using Avalonia.Controls;
 using Avalonia.Media.Imaging;
+using Avalonia.Threading;
 using CommunityToolkit.Mvvm.Input;
 using IntuitiveMedia.Core;
 using IntuitiveMedia.Models;
@@ -312,13 +313,24 @@ public sealed partial class PlayerViewModel : ViewModelBase, IDisposable
     public bool IsVideoDrawerOn
     {
         get => _isVideoDrawerOn;
-        set => SetField(ref _isVideoDrawerOn, value);
+        set
+        {
+            if (SetField(ref _isVideoDrawerOn, value) && value && _current is not null)
+                _ = LoadThumbnailsAsync(Playlist.Where(item => !item.IsMissing).ToList(), _current);
+        }
     }
 
     public bool IsPlaylistDrawerOn
     {
         get => _isPlaylistDrawerOn;
-        set => SetField(ref _isPlaylistDrawerOn, value);
+        set
+        {
+            if (SetField(ref _isPlaylistDrawerOn, value) && value)
+            {
+                foreach (var playlistData in _settings.Playlists)
+                    _ = LoadPlaylistThumbnailAsync(playlistData);
+            }
+        }
     }
 
     public PlaybackState State
@@ -411,9 +423,10 @@ public sealed partial class PlayerViewModel : ViewModelBase, IDisposable
         _player.Seek(clampedPosition);
     }
 
-    public void Initialize()
+    public void Initialize(AppSettings settings, bool deferStartupWork = false)
     {
-        _settings = SettingsStore.Load();
+        ArgumentNullException.ThrowIfNull(settings);
+        _settings = settings;
         _applyingPreferences = true;
         try
         {
@@ -432,35 +445,28 @@ public sealed partial class PlayerViewModel : ViewModelBase, IDisposable
         }
         _player.SetVolume(IsMuted ? 0 : Volume);
 
-        // ############################ LOGS ###########################
-        Console.WriteLine("######### PlayerViewModel.Initialize debug #########");
-        Console.WriteLine($"App Version: {_settings.Version}");
-        Console.WriteLine($"Playlists loaded:");
-        foreach (var playlist in _settings.Playlists)
-        {
-            Console.WriteLine($"ID: {playlist.Id} | Name: {playlist.Name}");
-        }
-        Console.WriteLine($"Current Playlist ID: {_settings.CurrentPlaylistId}");
-
-        // ################################################################
-
         var data = _settings.CurrentPlaylistId is { } currentPlaylistId
             ? _settings.Playlists.FirstOrDefault(p => p.Id == currentPlaylistId)
             : null;
 
         foreach (var playlistData in _settings.Playlists)
-        {
             AddOrUpdatePlaylistItem(playlistData);
-            if (!ReferenceEquals(playlistData, data))
-                _ = LoadPlaylistThumbnailAsync(playlistData);
-        }
 
         if (data is not null)
-            LoadPlaylist(data, startPlayback: false, saveSettings: false);
-        else
-            Console.WriteLine("No current playlist is configured.");
+            LoadPlaylist(
+                data,
+                startPlayback: false,
+                saveSettings: false,
+                checkMissingFiles: !deferStartupWork,
+                loadThumbnails: !deferStartupWork);
 
         Playlist.CollectionChanged += OnPlaylistChanged;   // Add, Move e Remove salvam sozinhos
+
+        if (deferStartupWork)
+        {
+            if (data is not null)
+                _ = ValidateStartupPlaylistAsync(data);
+        }
     }
 
     private void OnPlaylistChanged(object? s, NotifyCollectionChangedEventArgs e)
@@ -518,7 +524,9 @@ public sealed partial class PlayerViewModel : ViewModelBase, IDisposable
     public void LoadPlaylist(
         PlaylistData data,
         bool startPlayback = true,
-        bool saveSettings = true)
+        bool saveSettings = true,
+        bool checkMissingFiles = true,
+        bool loadThumbnails = true)
     {
         _loading = true;
         try
@@ -528,7 +536,6 @@ public sealed partial class PlayerViewModel : ViewModelBase, IDisposable
 
             Playlist.Clear();
 
-            Console.WriteLine("########## LoadPlaylist log ###########");
             // carrega os vídeos da playlist no drawer
             foreach (var i in data.Items)
             {
@@ -537,12 +544,9 @@ public sealed partial class PlayerViewModel : ViewModelBase, IDisposable
                     Id = i.Id,
                     Title = i.Title,
                     Path = i.Path,
-                    IsMissing = !File.Exists(i.Path)
+                    IsMissing = checkMissingFiles && !File.Exists(i.Path)
                 });
-
-                Console.WriteLine($"Video Title: {i.Title} | Video Id: {i.Id}");
             }
-            Console.WriteLine($"Playlist Current Item id: {data.CurrentItemId}");
 
             var currentItem = data.CurrentItemId is { } currentItemId
                 ? Playlist.FirstOrDefault(v => v.Id == currentItemId)
@@ -564,12 +568,15 @@ public sealed partial class PlayerViewModel : ViewModelBase, IDisposable
         finally
         {
             _loading = false;
-            Console.WriteLine(CurrentFile is not null ? "Current file is not null" : "Current file is null");
             if (startPlayback)
                 Play(CurrentFile);
         }
 
-        _ = LoadThumbnailsAsync(Playlist.Where(v => !v.IsMissing).ToList(), data);
+        if (IsPlaylistDrawerOn)
+            _ = LoadPlaylistThumbnailAsync(data);
+
+        if (loadThumbnails && IsVideoDrawerOn)
+            _ = LoadThumbnailsAsync(Playlist.Where(v => !v.IsMissing).ToList(), data);
         if (saveSettings)
             FlushSave();
     }
@@ -678,32 +685,30 @@ public sealed partial class PlayerViewModel : ViewModelBase, IDisposable
         if (data.Thumbnail is not null)
             return;
 
-        foreach (var item in data.Items)
-        {
-            if (!File.Exists(item.Path))
-                continue;
+        var item = await Task.Run(() =>
+            data.Items.FirstOrDefault(candidate => File.Exists(candidate.Path)));
 
-            var thumbnail = await ThumbnailService.GetOrCreateAsync(item.Path);
-            if (thumbnail is null)
-                continue;
-
-            data.Thumbnail = thumbnail;
-            var playlistItem = Playlists.FirstOrDefault(item => item.Id == data.Id);
-            if (playlistItem is not null)
-                playlistItem.Thumbnail = thumbnail;
-
-            if (ReferenceEquals(_current, data))
-                CurrentPlaylistThumbnail = thumbnail;
-
+        if (item is null)
             return;
-        }
+
+        var thumbnail = await Task.Run(() => ThumbnailService.GetOrCreateAsync(item.Path));
+        if (thumbnail is null)
+            return;
+
+        data.Thumbnail = thumbnail;
+        var playlistItem = Playlists.FirstOrDefault(candidate => candidate.Id == data.Id);
+        if (playlistItem is not null)
+            playlistItem.Thumbnail = thumbnail;
+
+        if (ReferenceEquals(_current, data))
+            CurrentPlaylistThumbnail = thumbnail;
     }
 
     // pra carregar as thumbs dos vídeos quando uma playlist for carregada:
     private async Task LoadThumbnailsAsync(List<VideoItem> items, PlaylistData data)
     {
         foreach (var item in items)
-            item.Thumbnail = await ThumbnailService.GetOrCreateAsync(item.Path);
+            item.Thumbnail = await Task.Run(() => ThumbnailService.GetOrCreateAsync(item.Path));
 
         if (ReferenceEquals(_current, data))
         {
@@ -713,6 +718,37 @@ public sealed partial class PlayerViewModel : ViewModelBase, IDisposable
             if (playlistItem is not null)
                 playlistItem.Thumbnail = data.Thumbnail;
         }
+    }
+
+    private async Task ValidateStartupPlaylistAsync(PlaylistData data)
+    {
+        var items = Playlist.ToArray();
+        var missingItemIds = await Task.Run(() => items
+            .Where(item => !File.Exists(item.Path))
+            .Select(item => item.Id)
+            .ToHashSet());
+
+        await Dispatcher.UIThread.InvokeAsync(() =>
+        {
+            if (!ReferenceEquals(_current, data))
+                return;
+
+            foreach (var item in items)
+                item.IsMissing = missingItemIds.Contains(item.Id);
+
+            if (CurrentFile is null || CurrentFile.IsMissing)
+            {
+                CurrentFile = Playlist.FirstOrDefault(item => !item.IsMissing);
+                data.PositionMs = 0;
+            }
+
+            data.CurrentItemId = CurrentFile?.Id;
+            if (CurrentFile is not null)
+                Play(CurrentFile);
+
+            if (IsVideoDrawerOn)
+                _ = LoadThumbnailsAsync(Playlist.Where(item => !item.IsMissing).ToList(), data);
+        });
     }
 
     private void SyncToSettings()

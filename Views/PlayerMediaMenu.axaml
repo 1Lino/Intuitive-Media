@@ -43,7 +43,7 @@
             <PathIcon />
         </Button>
 
-        <!-- Ao clicar no botão acima, a propriedade IsVideoDrawerOn mudará entre True e False, fazendo a visibilidade do controle abaixo responder conforme este dado através de Data-Binding no contexto de MainViewModel-->
+        <!-- Ao clicar no botão acima, a propriedade IsVideoDrawerOn mudará entre True e False e atualizará a visibilidade pelo binding do PlayerViewModel. -->
         <control:MediaDrawer IsVisible="{Binding IsVideoDrawerOn}"/>
 
     </Grid>
