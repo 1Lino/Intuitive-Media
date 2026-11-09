@@ -79,9 +79,10 @@
     <!-- Painel principal -->
     <!-- TODO: deve haver uma lógica que faz os demais paineis de controles do player sumirem quando este aqui estiver ativo, e vice versa. Também devo fazer com que as dimensões destes painéis sejam dinâmicos de acordo com o estado da tela (se fullscreen está on ou off) -->
     <Border CornerRadius="10"
-            Background="#7CFF2600"
+            Background="#7CE2E2E2"
             Width="{Binding PlaylistDrawerWidth}" Height="{Binding PlaylistDrawerHeight}" MaxHeight="480"
             Margin="0 50">
+        <!--Background:#7CFF2600-->
 
         <DockPanel Name="PlaylistsDrawer" LastChildFill="False">
 
@@ -141,12 +142,13 @@
 
             <!-- Painel de add e delete-->
             <Border DockPanel.Dock="Bottom"
-                    Background="#BD5712"
+                    Background="#4B4A4A"
                     Width="160"
                     HorizontalAlignment="Center"
                     VerticalAlignment="Bottom"
                     Margin="10"
                     CornerRadius="5">
+                <!--Background: #BD5712-->
                 <StackPanel Orientation="Horizontal"
                             Spacing="10"
                             HorizontalAlignment="Center"

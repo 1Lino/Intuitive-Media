@@ -37,9 +37,10 @@
 
       <!-- Painel principal -->
       <Border CornerRadius="10"
-              Background="#7CFF2600"
+              Background="#7CE2E2E2"
               Width="400" Height="150"
               Margin="0 50">
+            <!-- #7CFF2600 -->
             <DockPanel Name="VideoDrawer">
                   <ScrollViewer HorizontalScrollBarVisibility="Auto"
                                 VerticalScrollBarVisibility="Disabled">

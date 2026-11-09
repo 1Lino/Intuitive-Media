@@ -9,8 +9,8 @@
         Width="800" Height="500" MinWidth="600" MinHeight="450"
         x:Class="IntuitiveMedia.Views.MainWindow"
         x:DataType="vm:PlayerViewModel"
-        Icon="/Assets/avalonia-logo.ico"
-        Title="IntuitiveMedia Player"
+        Icon="/Assets/IntuitiveMediaLogo.ico"
+        Title="intuitiveMedia"
         >
 
     <Design.DataContext>

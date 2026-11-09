@@ -122,7 +122,7 @@
 
 
         <Border CornerRadius="10"
-                Background="#7CFF2600"
+                Background="#7C7E7E7E"
                 Width="550"
                 Height="100"
                 VerticalAlignment="Bottom"
