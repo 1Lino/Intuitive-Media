@@ -117,11 +117,11 @@ public partial class PlaylistDrawer : UserControl
 
     private void Item_PointerReleased(object? sender, PointerReleasedEventArgs e)
     {
-        var playlistToPlay = _pressedItem;
-        var isClick = playlistToPlay is not null &&
+        var playlistToSelect = _pressedItem;
+        var isClick = playlistToSelect is not null &&
                       sender is Control control &&
                       ReferenceEquals(control, _pressedControl) &&
-                      ReferenceEquals(control.DataContext, playlistToPlay) &&
+                      ReferenceEquals(control.DataContext, playlistToSelect) &&
                       e.InitialPressMouseButton == MouseButton.Left &&
                       _draggedItem is null;
 
@@ -129,9 +129,9 @@ public partial class PlaylistDrawer : UserControl
         _pressedArgs = null;
         _pressedControl = null;
 
-        if (isClick && playlistToPlay is not null && Vm is { } vm)
+        if (isClick && playlistToSelect is not null && Vm is { } vm)
         {
-            vm.LoadPlaylist(playlistToPlay, startPlayback: false);
+            vm.SelectedPlaylist = playlistToSelect;
             vm.IsMouseDragging = false;
         }
     }
@@ -249,7 +249,11 @@ public partial class PlaylistDrawer : UserControl
 
     private async Task DeletePlaylistAsync()
     {
-        if (Vm is not { CurrentPlaylist: { } playlist } vm)
+        if (Vm is not { } vm)
+            return;
+
+        var playlist = vm.SelectedPlaylist ?? vm.CurrentPlaylist;
+        if (playlist is null)
             return;
 
         var dialog = new Dialog(

@@ -49,6 +49,7 @@ public sealed partial class PlayerViewModel : ViewModelBase, IDisposable
     private bool _isPlaylistEnd = false;
     private VideoItem? _currentFile;
     private PlaylistItem? _currentPlaylist;
+    private PlaylistItem? _selectedPlaylist;
     private Bitmap? _currentPlaylistThumbnail;
     private PlaybackState _state;
     private TimeSpan _position;
@@ -180,6 +181,22 @@ public sealed partial class PlayerViewModel : ViewModelBase, IDisposable
         {
             if (SetField(ref _autoRepeat, value))
                 OnPreferencesChanged();
+        }
+    }
+
+    public PlaylistItem? SelectedPlaylist
+    {
+        get => _selectedPlaylist;
+        set
+        {
+            if (ReferenceEquals(_selectedPlaylist, value))
+                return;
+
+            if (_selectedPlaylist is not null)
+                _selectedPlaylist.IsSelected = false;
+
+            if (SetField(ref _selectedPlaylist, value) && value is not null)
+                value.IsSelected = true;
         }
     }
 
@@ -571,6 +588,7 @@ public sealed partial class PlayerViewModel : ViewModelBase, IDisposable
             data.CurrentItemId = currentItem?.Id;
 
             CurrentPlaylist = AddOrUpdatePlaylistItem(data);
+            SelectedPlaylist = CurrentPlaylist;
             CurrentPlaylistThumbnail = data.Thumbnail;
 
         }
@@ -639,6 +657,7 @@ public sealed partial class PlayerViewModel : ViewModelBase, IDisposable
         _settings.CurrentPlaylistId = data.Id;
         _current = data;
         CurrentPlaylist = AddOrUpdatePlaylistItem(data);
+        SelectedPlaylist = CurrentPlaylist;
         FlushSave();
     }
 
@@ -658,6 +677,9 @@ public sealed partial class PlayerViewModel : ViewModelBase, IDisposable
             CurrentPlaylist = null;
             CurrentPlaylistThumbnail = null;
         }
+
+        if (ReferenceEquals(SelectedPlaylist, playlist))
+            SelectedPlaylist = null;
 
         FlushSave();
     }

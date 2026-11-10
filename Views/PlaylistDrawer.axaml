@@ -33,6 +33,11 @@
             <Setter Property="Background" Value="#83332311" />
         </Style>
 
+        <Style Selector="Border.item.selected">
+            <Setter Property="BorderBrush" Value="#FFFF8800" />
+            <Setter Property="Background" Value="#5A2F12" />
+        </Style>
+
         <Style Selector="Border.item.dragover">
             <Setter Property="BorderBrush" Value="#FF7B00" />
             <Setter Property="Background" Value="#472600" />
@@ -105,6 +110,7 @@
                             <!-- Margin/Padding orientation: Left, Top, Right, Bottom -->
                             <Border Classes="item" Margin="10 10 20 10 " Padding="4"
                                     Classes.current="{Binding IsCurrent}"
+                                    Classes.selected="{Binding IsSelected}"
                                     Cursor="Hand"
                                     DragDrop.AllowDrop="True"
                                     PointerPressed="Item_PointerPressed"
