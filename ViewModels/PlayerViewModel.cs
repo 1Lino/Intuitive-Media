@@ -10,7 +10,6 @@ using System.Threading.Tasks;
 using System.Windows.Input;
 using Avalonia.Controls;
 using Avalonia.Media.Imaging;
-using Avalonia.Threading;
 using CommunityToolkit.Mvvm.Input;
 using IntuitiveMedia.Core;
 using IntuitiveMedia.Models;
@@ -450,7 +449,7 @@ public sealed partial class PlayerViewModel : ViewModelBase, IDisposable
         _player.Seek(clampedPosition);
     }
 
-    public void Initialize(AppSettings settings, bool deferStartupWork = false)
+    public void Initialize(AppSettings settings)
     {
         ArgumentNullException.ThrowIfNull(settings);
         _settings = settings;
@@ -472,28 +471,11 @@ public sealed partial class PlayerViewModel : ViewModelBase, IDisposable
         }
         _player.SetVolume(IsMuted ? 0 : Volume);
 
-        var data = _settings.CurrentPlaylistId is { } currentPlaylistId
-            ? _settings.Playlists.FirstOrDefault(p => p.Id == currentPlaylistId)
-            : null;
-
+        _settings.CurrentPlaylistId = null;
         foreach (var playlistData in _settings.Playlists)
             AddOrUpdatePlaylistItem(playlistData);
 
-        if (data is not null)
-            LoadPlaylist(
-                data,
-                startPlayback: false,
-                saveSettings: false,
-                checkMissingFiles: !deferStartupWork,
-                loadThumbnails: !deferStartupWork);
-
         Playlist.CollectionChanged += OnPlaylistChanged;   // Add, Move e Remove salvam sozinhos
-
-        if (deferStartupWork)
-        {
-            if (data is not null)
-                _ = ValidateStartupPlaylistAsync(data);
-        }
     }
 
     private void OnPlaylistChanged(object? s, NotifyCollectionChangedEventArgs e)
@@ -747,37 +729,6 @@ public sealed partial class PlayerViewModel : ViewModelBase, IDisposable
         }
     }
 
-    private async Task ValidateStartupPlaylistAsync(PlaylistData data)
-    {
-        var items = Playlist.ToArray();
-        var missingItemIds = await Task.Run(() => items
-            .Where(item => !File.Exists(item.Path))
-            .Select(item => item.Id)
-            .ToHashSet());
-
-        await Dispatcher.UIThread.InvokeAsync(() =>
-        {
-            if (!ReferenceEquals(_current, data))
-                return;
-
-            foreach (var item in items)
-                item.IsMissing = missingItemIds.Contains(item.Id);
-
-            if (CurrentFile is null || CurrentFile.IsMissing)
-            {
-                CurrentFile = Playlist.FirstOrDefault(item => !item.IsMissing);
-                data.PositionMs = 0;
-            }
-
-            data.CurrentItemId = CurrentFile?.Id;
-            if (CurrentFile is not null)
-                Play(CurrentFile);
-
-            if (IsVideoDrawerOn)
-                _ = LoadThumbnailsAsync(Playlist.Where(item => !item.IsMissing).ToList(), data);
-        });
-    }
-
     private void SyncToSettings()
     {
         if (_current is null)
@@ -853,20 +804,14 @@ public sealed partial class PlayerViewModel : ViewModelBase, IDisposable
         var existingData = _settings.Playlists.FirstOrDefault(playlist =>
             HaveSameMediaPaths(playlist.Items.Select(item => item.Path), paths));
         if (existingData is not null)
-        {
-            LoadPlaylist(existingData);
             return existingData;
-        }
 
         var existingDrawerItem = Playlists.FirstOrDefault(playlist =>
             HaveSameMediaPaths(playlist.MediaPaths, paths));
 
         if (existingDrawerItem is not null &&
             _settings.Playlists.FirstOrDefault(playlist => playlist.Id == existingDrawerItem.Id) is { } existingById)
-        {
-            LoadPlaylist(existingById);
             return existingById;
-        }
 
         var data = new PlaylistData
         {
@@ -881,7 +826,8 @@ public sealed partial class PlayerViewModel : ViewModelBase, IDisposable
             data.Thumbnail = await ThumbnailService.GetOrCreateAsync(firstItem.Path);
 
         _settings.Playlists.Add(data);
-        LoadPlaylist(data);
+        AddOrUpdatePlaylistItem(data);
+        FlushSave();
         return data;
     }
 

@@ -72,7 +72,7 @@ public partial class App : Application
 
             var mainViewModel = new PlayerViewModel(new VlcMediaPlayerService(vlcCore));
             _mainViewModel = mainViewModel;
-            mainViewModel.Initialize(settings, deferStartupWork: true);
+            mainViewModel.Initialize(settings);
             mainViewModel.AreControlsVisible = true;
             mainWindow.SetPlayerViewModel(mainViewModel);
             mainWindow.SetStartupStatus(null);
