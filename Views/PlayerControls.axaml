@@ -239,7 +239,7 @@
                                 <Slider Name="VolumeControl"
                                         Minimum="0"
                                         Maximum="100"
-                                        Value="{Binding Volume, Mode=TwoWay}"
+                                        Value="{Binding VolumeControlValue, Mode=TwoWay}"
                                         Width="100"
                                         Background="#5A2F12"
                                         Foreground="#FF8800">

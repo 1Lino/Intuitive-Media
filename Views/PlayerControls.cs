@@ -21,12 +21,8 @@ public partial class PlayerControls : UserControl
 
     private void MutarMidia(object? sender, RoutedEventArgs e)
     {
-
         if (DataContext is PlayerViewModel vm)
-        {
             vm.IsMuted = !vm.IsMuted;
-        }
-
     }
 
     private async void CarregarMidia(object? sender, RoutedEventArgs e)

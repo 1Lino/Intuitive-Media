@@ -221,6 +221,7 @@ public sealed partial class PlayerViewModel : ViewModelBase, IDisposable
         {
             if (SetField(ref _isMuted, value))
             {
+                OnPropertyChanged(nameof(VolumeControlValue));
                 if (!_applyingPreferences)
                     _player.SetVolume(_isMuted ? 0 : _volume);
                 OnPreferencesChanged();
@@ -381,10 +382,36 @@ public sealed partial class PlayerViewModel : ViewModelBase, IDisposable
             var volume = Math.Clamp(value, 0, 100);
             if (SetField(ref _volume, volume))
             {
+                OnPropertyChanged(nameof(VolumeControlValue));
                 if (!_applyingPreferences)
                     _player.SetVolume(_isMuted ? 0 : volume);
                 OnPreferencesChanged();
             }
+        }
+    }
+
+    public int VolumeControlValue
+    {
+        get => IsMuted ? 0 : Volume;
+        set
+        {
+            var volume = Math.Clamp(value, 0, 100);
+            if (IsMuted)
+            {
+                if (volume > 0)
+                {
+                    Volume = volume;
+                    IsMuted = false;
+                }
+                else
+                {
+                    OnPropertyChanged(nameof(VolumeControlValue));
+                }
+
+                return;
+            }
+
+            Volume = volume;
         }
     }
 
@@ -881,7 +908,10 @@ public sealed partial class PlayerViewModel : ViewModelBase, IDisposable
     private void OnVolumeChanged(object? sender, double volume)
     {
         if (!IsMuted)
-            SetField(ref _volume, Math.Clamp((int)volume, 0, 100), nameof(Volume));
+        {
+            if (SetField(ref _volume, Math.Clamp((int)volume, 0, 100), nameof(Volume)))
+                OnPropertyChanged(nameof(VolumeControlValue));
+        }
     }
 
     private void OnErrorOccurred(object? sender, string message) => LastError = message;
