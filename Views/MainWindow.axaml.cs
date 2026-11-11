@@ -15,6 +15,7 @@ public partial class MainWindow : Window
         {
             if (DataContext is PlayerViewModel vm)
             {
+
                 if (GetTopLevel(this) is not Window window) return;
 
                 if (e.Property == WindowStateProperty && WindowState == WindowState.Maximized)

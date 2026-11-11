@@ -44,7 +44,7 @@
         </Button>
 
         <!-- Ao clicar no botão acima, a propriedade IsVideoDrawerOn mudará entre True e False e atualizará a visibilidade pelo binding do PlayerViewModel. -->
-        <control:MediaDrawer IsVisible="{Binding IsVideoDrawerOn}"/>
+        <control:MediaDrawer IsVisible="{Binding IsVideoDrawerOn, FallbackValue=False}"/>
 
     </Grid>
     <!--END-->

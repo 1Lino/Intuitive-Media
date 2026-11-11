@@ -9,6 +9,7 @@ using IntuitiveMedia.ViewModels;
 using IntuitiveMedia.Views;
 using System;
 using System.Diagnostics;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace IntuitiveMedia;
@@ -18,6 +19,7 @@ public partial class App : Application
     private VlcCoreInitializer? _vlcCore;
     private PlayerViewModel? _mainViewModel;
     private Task? _startupTask;
+    private readonly CancellationTokenSource _startupCancellation = new();
     private bool _shutdownRequested;
     private bool _resourcesDisposed;
 
@@ -47,6 +49,7 @@ public partial class App : Application
             desktop.ShutdownRequested += (_, _) =>
             {
                 _shutdownRequested = true;
+                _startupCancellation.Cancel();
                 if (_startupTask?.IsCompleted != false)
                     DisposeResources();
             };
@@ -76,6 +79,10 @@ public partial class App : Application
             mainViewModel.AreControlsVisible = true;
             mainWindow.SetPlayerViewModel(mainViewModel);
             mainWindow.SetStartupStatus(null);
+            await mainViewModel.LoadPlaylistsAsync(_startupCancellation.Token);
+        }
+        catch (OperationCanceledException) when (_shutdownRequested)
+        {
         }
         catch (Exception ex)
         {
@@ -98,5 +105,6 @@ public partial class App : Application
         _resourcesDisposed = true;
         _mainViewModel?.Dispose();
         _vlcCore?.Dispose();
+        _startupCancellation.Dispose();
     }
 }

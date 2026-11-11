@@ -35,6 +35,8 @@ public sealed partial class PlayerViewModel : ViewModelBase, IDisposable
     // do ViewModelBase, que basicamente faz o serviço de notificar ao binding da UI quando estas propriedades são mudadas.
     // O que fica exposto para a UI é o AreControlsVisible, por exemplo, enquanto que _areControlsVisible é interno. Só não funciona com listas, pois SetField não foi criado levando em conta listas, apenas valores individuais.
     private readonly IMediaPlayerService _player;
+    private readonly Dictionary<Guid, PlaylistItem> _playlistItemsById = new();
+    private readonly HashSet<Guid> _deletedPlaylistIds = new();
     private WindowState _windowStateBeforeFullScreen = WindowState.Normal;
     private int _playlistDrawerHeight = 200;
     private int _playlistDrawerWidth = 180;
@@ -489,10 +491,25 @@ public sealed partial class PlayerViewModel : ViewModelBase, IDisposable
         _player.SetVolume(IsMuted ? 0 : Volume);
 
         _settings.CurrentPlaylistId = null;
-        foreach (var playlistData in _settings.Playlists)
-            AddOrUpdatePlaylistItem(playlistData);
-
         Playlist.CollectionChanged += OnPlaylistChanged;   // Add, Move e Remove salvam sozinhos
+    }
+
+    public async Task LoadPlaylistsAsync(CancellationToken cancellationToken = default)
+    {
+        await Task.Yield();
+
+        var playlists = _settings.Playlists.ToArray();
+        for (var index = 0; index < playlists.Length; index++)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            var playlistData = playlists[index];
+            if (!_deletedPlaylistIds.Contains(playlistData.Id))
+                AddOrUpdatePlaylistItem(playlistData);
+
+            if ((index + 1) % 50 == 0)
+                await Task.Yield();
+        }
     }
 
     private void OnPlaylistChanged(object? s, NotifyCollectionChangedEventArgs e)
@@ -532,10 +549,11 @@ public sealed partial class PlayerViewModel : ViewModelBase, IDisposable
 
     private PlaylistItem AddOrUpdatePlaylistItem(PlaylistData data)
     {
-        var playlistItem = Playlists.FirstOrDefault(item => item.Id == data.Id);
-        if (playlistItem is null)
+        _deletedPlaylistIds.Remove(data.Id);
+        if (!_playlistItemsById.TryGetValue(data.Id, out var playlistItem))
         {
             playlistItem = new PlaylistItem { Id = data.Id };
+            _playlistItemsById.Add(data.Id, playlistItem);
             Playlists.Add(playlistItem);
         }
 
@@ -668,7 +686,9 @@ public sealed partial class PlayerViewModel : ViewModelBase, IDisposable
                                 _settings.CurrentPlaylistId == playlistId;
 
         Playlists.Remove(playlist);
+        _playlistItemsById.Remove(playlistId);
         _settings.Playlists.RemoveAll(data => data.Id == playlistId);
+        _deletedPlaylistIds.Add(playlistId);
 
         if (isCurrentPlaylist)
         {

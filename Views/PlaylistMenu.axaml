@@ -41,7 +41,7 @@
             <PathIcon />
         </Button>
 
-        <control:PlaylistDrawer IsVisible="{Binding IsPlaylistDrawerOn}"/>
+        <control:PlaylistDrawer IsVisible="{Binding IsPlaylistDrawerOn, FallbackValue=False}"/>
 
     </Grid>
     <!--END-->
