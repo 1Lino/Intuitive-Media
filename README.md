@@ -36,6 +36,28 @@ Sobre **Fluent UI System**, veja:
 
 Repositório oficial: [github.com/microsoft/fluentui-system-icons](https://github.com/microsoft/fluentui-system-icons)
 
+### Abrir vídeos pelo Windows Explorer
+
+O executável recebe os caminhos enviados pelo Windows como argumentos, carrega os arquivos existentes na playlist atual e inicia o primeiro. A publicação portátil inclui `register-open-with.ps1`, que registra o aplicativo apenas para o usuário atual e o disponibiliza em **Abrir com** para formatos de vídeo comuns. O script não altera o aplicativo padrão e não precisa de privilégios de administrador.
+
+Extraia a publicação em uma pasta permanente e execute nela:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\register-open-with.ps1
+```
+
+Para remover a integração:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\register-open-with.ps1 -Unregister
+```
+
+Também é possível iniciar o app diretamente com um ou mais caminhos entre aspas:
+
+```powershell
+.\IntuitiveMedia.exe "C:\Videos\video 1.mp4" "C:\Videos\video 2.mkv"
+```
+
 ### Licença
 
 O código é livre para uso pessoal, para estudos, como referência ou como base para outro projeto qualquer, caso seja do interesse.

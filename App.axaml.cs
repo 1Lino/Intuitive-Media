@@ -9,6 +9,8 @@ using IntuitiveMedia.ViewModels;
 using IntuitiveMedia.Views;
 using System;
 using System.Diagnostics;
+using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -34,6 +36,7 @@ public partial class App : Application
 
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
+            var startupArgs = desktop.Args ?? Array.Empty<string>();
             var mainWindow = new MainWindow
             {
                 DataContext = null,
@@ -42,7 +45,7 @@ public partial class App : Application
 
             mainWindow.Opened += (_, _) =>
             {
-                _startupTask = InitializePlayerAsync(mainWindow);
+                _startupTask = InitializePlayerAsync(mainWindow, startupArgs);
             };
             mainWindow.Closing += (_, _) => _mainViewModel?.FlushSave();
 
@@ -58,7 +61,7 @@ public partial class App : Application
         base.OnFrameworkInitializationCompleted();
     }
 
-    private async Task InitializePlayerAsync(MainWindow mainWindow)
+    private async Task InitializePlayerAsync(MainWindow mainWindow, string[] startupArgs)
     {
         try
         {
@@ -80,6 +83,7 @@ public partial class App : Application
             mainWindow.SetPlayerViewModel(mainViewModel);
             mainWindow.SetStartupStatus(null);
             await mainViewModel.LoadPlaylistsAsync(_startupCancellation.Token);
+            OpenStartupMediaFiles(mainViewModel, startupArgs);
         }
         catch (OperationCanceledException) when (_shutdownRequested)
         {
@@ -95,6 +99,45 @@ public partial class App : Application
             if (_shutdownRequested)
                 DisposeResources();
         }
+    }
+
+    private static void OpenStartupMediaFiles(PlayerViewModel viewModel, string[] startupArgs)
+    {
+        var paths = startupArgs
+            .Where(argument => !string.IsNullOrWhiteSpace(argument))
+            .Select(TryGetExistingFilePath)
+            .OfType<string>()
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+
+        if (paths.Length == 0)
+            return;
+
+        viewModel.LoadMediaFiles(paths
+            .Select(path => new VideoItem
+            {
+                Title = Path.GetFileName(path),
+                Path = path,
+            })
+            .ToArray());
+    }
+
+    private static string? TryGetExistingFilePath(string argument)
+    {
+        try
+        {
+            var path = Path.GetFullPath(argument);
+            if (File.Exists(path))
+                return path;
+
+            Trace.TraceWarning($"O argumento de inicialização não é um arquivo existente: {argument}");
+        }
+        catch (Exception ex) when (ex is ArgumentException or IOException or NotSupportedException)
+        {
+            Trace.TraceWarning($"Não foi possível interpretar o arquivo recebido na inicialização '{argument}': {ex.Message}");
+        }
+
+        return null;
     }
 
     private void DisposeResources()
