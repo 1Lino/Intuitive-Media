@@ -58,6 +58,8 @@ Também é possível iniciar o app diretamente com um ou mais caminhos entre asp
 .\IntuitiveMedia.exe "C:\Videos\video 1.mp4" "C:\Videos\video 2.mkv"
 ```
 
-### Licença
+### Licença e dependências de terceiros
 
-O código é livre para uso pessoal, para estudos, como referência ou como base para outro projeto qualquer, caso seja do interesse.
+O código original deste projeto é distribuído sob a licença MIT. Consulte [LICENSE](./LICENSE).
+
+Essa licença não se estende às dependências, fontes ou recursos de terceiros. A publicação portátil inclui o LibVLC, licenciado sob LGPL-2.1-or-later, e os avisos correspondentes. Antes de redistribuir o aplicativo, leia [THIRD-PARTY-NOTICES.md](./THIRD-PARTY-NOTICES.md) e cumpra as condições da licença do LibVLC. Os arquivos de licença e avisos são incluídos na pasta publicada.

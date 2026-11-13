@@ -12,6 +12,9 @@
     <Folder Include="Models\" />
     <AvaloniaResource Include="Assets\**" />
     <Content Include="register-open-with.ps1" CopyToPublishDirectory="Always" />
+    <None Update="LICENSE" CopyToPublishDirectory="Always" />
+    <None Update="THIRD-PARTY-NOTICES.md" CopyToPublishDirectory="Always" />
+    <None Update="COPYING.LGPL-2.1" CopyToPublishDirectory="Always" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Avalonia" Version="12.1.2" />
